@@ -885,42 +885,91 @@ export class ClientStorageService {
     if (!session) throw new Error('Session not found');
 
     const questions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const topics = getStored<StoredTopic[]>('mcq_topics', []);
+    const subtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+
     const detailed = session.questions.map(qq => {
       const q = questions.find(item => item.id === qq.questionId);
+      const t = topics.find(item => item.id === q?.topic_id);
+      const s = subtopics.find(item => item.id === q?.subtopic_id);
+      const isCorrect = Boolean(qq.is_correct);
       return {
         id: qq.id,
+        qq_id: qq.id,
         questionId: qq.questionId,
+        question_id: qq.questionId,
+        position: qq.position,
+        repeat_count: qq.repeat_count || 0,
         questionText: q?.question_text || '',
+        question_text: q?.question_text || '',
         explanation: q?.explanation || '',
         difficulty: q?.difficulty || 'medium',
         correctAnswer: q?.correct_answer || 'A',
+        correct_answer: q?.correct_answer || 'A',
         selectedOption: qq.selected_option || '',
-        isCorrect: Boolean(qq.is_correct),
-        responseTimeMs: qq.response_time_ms || 0,
+        selected_option: qq.selected_option || '',
+        isCorrect,
+        is_correct: isCorrect ? 1 : 0,
+        responseTimeMs: qq.response_time_ms || 3000,
+        response_time_ms: qq.response_time_ms || 3000,
+        topic_name: t?.name || 'General',
+        subtopic_name: s?.name || 'General',
         options: q?.options || []
       };
     });
 
+    const answeredList = detailed.filter(d => d.selectedOption || d.is_correct !== undefined);
+    const totalAnswered = answeredList.length > 0 ? answeredList.length : detailed.length;
     const correctCount = detailed.filter(d => d.isCorrect).length;
-    const totalCount = detailed.length;
-    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+    const incorrectCount = totalAnswered - correctCount;
+    const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : (session.accuracy || 0);
+
+    const startTime = new Date(session.started_at || Date.now()).getTime();
+    const endTime = session.completed_at ? new Date(session.completed_at).getTime() : Date.now();
+    const durationSec = Math.max(1, Math.round((endTime - startTime) / 1000));
+
+    const topicStats = new Map<string, { total: number; correct: number }>();
+    for (const q of detailed) {
+      const name = q.topic_name || 'General';
+      const stat = topicStats.get(name) || { total: 0, correct: 0 };
+      stat.total++;
+      if (q.isCorrect) stat.correct++;
+      topicStats.set(name, stat);
+    }
+
+    const strongAreas: string[] = [];
+    const weakAreas: string[] = [];
+    for (const [name, stat] of topicStats) {
+      const acc = (stat.correct / stat.total) * 100;
+      if (acc >= 75) strongAreas.push(name);
+      else weakAreas.push(name);
+    }
+
+    const reviewQuestions = detailed.filter(d => !d.isCorrect);
+
+    const summary = {
+      score: session.score || correctCount * 100,
+      accuracy,
+      totalAnswered,
+      correctCount,
+      incorrectCount,
+      durationSec,
+      avgResponseTimeMs: Math.round(detailed.reduce((acc, q) => acc + q.responseTimeMs, 0) / (totalAnswered || 1)),
+      strongAreas,
+      weakAreas,
+      reviewQuestionsCount: reviewQuestions.length
+    };
 
     return {
       session: {
         ...session,
         accuracy,
-        score: correctCount * 100
+        score: summary.score
       },
+      summary,
+      stats: summary,
       questions: detailed,
-      stats: {
-        totalQuestions: totalCount,
-        correctCount,
-        incorrectCount: totalCount - correctCount,
-        accuracy,
-        score: correctCount * 100,
-        timeSpentSec: 45,
-        xpEarned: correctCount * 15
-      },
+      reviewQuestions,
       earnedAchievements: []
     };
   }

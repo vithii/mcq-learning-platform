@@ -60,7 +60,20 @@ export const QuizResultPage: React.FC = () => {
     );
   }
 
-  const { summary, questions, reviewQuestions } = data;
+  const summary = data?.summary || data?.stats || {
+    accuracy: data?.session?.accuracy || 0,
+    score: data?.session?.score || 0,
+    correctCount: 0,
+    totalAnswered: data?.questions?.length || 0,
+    incorrectCount: 0,
+    durationSec: 0,
+    avgResponseTimeMs: 0,
+    strongAreas: [],
+    weakAreas: [],
+    reviewQuestionsCount: 0
+  };
+  const questions = data?.questions || [];
+  const reviewQuestions = data?.reviewQuestions || questions.filter((q: any) => !q.isCorrect && q.is_correct !== 1);
 
   const formatDuration = (sec: number) => {
     const mins = Math.floor(sec / 60);
