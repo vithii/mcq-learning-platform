@@ -100,11 +100,11 @@ export class ImportService {
    * Parse and validate raw JSON import payload
    */
   static async validateAndPreview(rawJson: string | object): Promise<ValidationPreviewResult> {
-    let payload: RawImportPayload;
+    let rawObj: any;
 
     if (typeof rawJson === 'string') {
       try {
-        payload = JSON.parse(rawJson);
+        rawObj = JSON.parse(rawJson);
       } catch (err: any) {
         return {
           isValid: false,
@@ -120,7 +120,20 @@ export class ImportService {
         };
       }
     } else {
-      payload = rawJson as RawImportPayload;
+      rawObj = rawJson;
+    }
+
+    let payload: RawImportPayload;
+    if (Array.isArray(rawObj)) {
+      if (rawObj.length > 0 && rawObj[0] && Array.isArray(rawObj[0].topics)) {
+        payload = rawObj[0];
+      } else {
+        payload = { topics: rawObj };
+      }
+    } else if (rawObj && Array.isArray(rawObj.topics)) {
+      payload = rawObj;
+    } else {
+      payload = { topics: [] };
     }
 
     if (!payload || !Array.isArray(payload.topics) || payload.topics.length === 0) {

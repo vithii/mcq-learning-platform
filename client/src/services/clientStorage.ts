@@ -1339,44 +1339,315 @@ export class ClientStorageService {
   }
 
   // ADMIN
+  static normalizeText(text: string): string {
+    return (text || '')
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   static async validateImport(payload: any) {
     let raw = payload;
     if (typeof payload === 'string') {
       try {
         raw = JSON.parse(payload);
-      } catch (e) {
-        return { isValid: false, errors: ['Invalid JSON syntax'] };
+      } catch (e: any) {
+        return {
+          isValid: false,
+          totalTopics: 0,
+          totalSubtopics: 0,
+          totalQuestions: 0,
+          newCount: 0,
+          duplicateCount: 0,
+          invalidCount: 1,
+          errors: [{ problem: `Invalid JSON syntax: ${e.message}` }],
+          previewQuestions: [],
+          validatedRecords: []
+        };
       }
     }
 
-    const topics = raw.topics || [];
-    let questionCount = 0;
-    for (const t of topics) {
-      for (const s of (t.subtopics || [])) {
-        questionCount += (s.questions || []).length;
+    let topics: any[] = [];
+    if (Array.isArray(raw)) {
+      if (raw.length > 0 && raw[0] && Array.isArray(raw[0].topics)) {
+        topics = raw[0].topics;
+      } else {
+        topics = raw;
+      }
+    } else if (raw && Array.isArray(raw.topics)) {
+      topics = raw.topics;
+    }
+
+    if (!topics || !Array.isArray(topics) || topics.length === 0) {
+      return {
+        isValid: false,
+        totalTopics: 0,
+        totalSubtopics: 0,
+        totalQuestions: 0,
+        newCount: 0,
+        duplicateCount: 0,
+        invalidCount: 1,
+        errors: [{ problem: 'JSON structure must contain a valid \"topics\" array' }],
+        previewQuestions: [],
+        validatedRecords: []
+      };
+    }
+
+    const existingQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const existingByExternalId = new Map<string, string>();
+    const existingByNormText = new Map<string, string>();
+
+    for (const eq of existingQuestions) {
+      if (eq.external_id) {
+        existingByExternalId.set(eq.external_id.toLowerCase(), eq.id);
+      }
+      if (eq.question_text) {
+        existingByNormText.set(this.normalizeText(eq.question_text), eq.id);
       }
     }
+
+    const errors: any[] = [];
+    const validatedRecords: any[] = [];
+    let subtopicCount = 0;
+    let newCount = 0;
+    let duplicateCount = 0;
+    let invalidCount = 0;
+
+    for (let tIdx = 0; tIdx < topics.length; tIdx++) {
+      const t = topics[tIdx];
+      const topicId = (t.id || t.name || `topic-${tIdx + 1}`).toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      const topicName = t.name ? t.name.trim() : `Topic ${tIdx + 1}`;
+
+      if (!t.subtopics || !Array.isArray(t.subtopics) || t.subtopics.length === 0) {
+        errors.push({
+          topicId,
+          problem: `Topic \"${topicName}\" has no subtopics defined`
+        });
+        continue;
+      }
+
+      for (let sIdx = 0; sIdx < t.subtopics.length; sIdx++) {
+        const s = t.subtopics[sIdx];
+        subtopicCount++;
+        const subtopicId = (s.id || s.name || `subtopic-${subtopicCount}`).toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const subtopicName = s.name ? s.name.trim() : `Subtopic ${subtopicCount}`;
+
+        if (!s.questions || !Array.isArray(s.questions) || s.questions.length === 0) {
+          errors.push({
+            topicId,
+            subtopicId,
+            problem: `Subtopic \"${subtopicName}\" in \"${topicName}\" has no questions defined`
+          });
+          continue;
+        }
+
+        for (let qIdx = 0; qIdx < s.questions.length; qIdx++) {
+          const q = s.questions[qIdx];
+          const qText = (q.question || q.question_text || '').trim();
+          const qExtId = (q.id || `q-${topicId}-${subtopicId}-${qIdx + 1}`).trim();
+
+          if (!qText) {
+            invalidCount++;
+            errors.push({
+              topicId,
+              subtopicId,
+              questionId: qExtId,
+              problem: 'Question prompt text is empty'
+            });
+            continue;
+          }
+
+          if (!q.options || !Array.isArray(q.options) || q.options.length < 2) {
+            invalidCount++;
+            errors.push({
+              topicId,
+              subtopicId,
+              questionId: qExtId,
+              problem: 'Question must have at least 2 options'
+            });
+            continue;
+          }
+
+          const rawCorrect = (q.correct_answer || 'A').trim().toUpperCase();
+          const cleanedOptions = (q.options || []).map((o: any) => ({
+            key: (o.key || '').trim().toUpperCase(),
+            text: (o.text || '').trim()
+          }));
+
+          let isDuplicate = false;
+          let duplicateMatchBy: 'external_id' | 'question_text' | undefined;
+          let existingQuestionId: string | undefined;
+
+          if (existingByExternalId.has(qExtId.toLowerCase())) {
+            isDuplicate = true;
+            duplicateMatchBy = 'external_id';
+            existingQuestionId = existingByExternalId.get(qExtId.toLowerCase());
+          } else if (existingByNormText.has(this.normalizeText(qText))) {
+            isDuplicate = true;
+            duplicateMatchBy = 'question_text';
+            existingQuestionId = existingByNormText.get(this.normalizeText(qText));
+          }
+
+          if (isDuplicate) {
+            duplicateCount++;
+          } else {
+            newCount++;
+          }
+
+          validatedRecords.push({
+            topicId,
+            topicName,
+            topicDescription: t.description || '',
+            subtopicId,
+            subtopicName,
+            subtopicDescription: s.description || '',
+            externalId: qExtId,
+            questionText: qText,
+            explanation: q.explanation || '',
+            difficulty: (q.difficulty || 'medium').toLowerCase(),
+            correctAnswer: rawCorrect,
+            options: cleanedOptions,
+            isDuplicate,
+            duplicateMatchBy,
+            existingQuestionId
+          });
+        }
+      }
+    }
+
+    const previewQuestions = validatedRecords.slice(0, 10).map(r => ({
+      externalId: r.externalId,
+      topicName: r.topicName,
+      subtopicName: r.subtopicName,
+      questionText: r.questionText,
+      difficulty: r.difficulty,
+      optionCount: r.options.length,
+      correctAnswer: r.correctAnswer,
+      isDuplicate: r.isDuplicate,
+      duplicateMatchBy: r.duplicateMatchBy
+    }));
 
     return {
-      isValid: questionCount > 0,
-      topicCount: topics.length,
-      questionCount,
-      errors: questionCount === 0 ? ['No questions found in payload'] : []
+      isValid: invalidCount === 0 && validatedRecords.length > 0,
+      totalTopics: topics.length,
+      totalSubtopics: subtopicCount,
+      totalQuestions: validatedRecords.length + invalidCount,
+      newCount,
+      duplicateCount,
+      invalidCount,
+      errors,
+      previewQuestions,
+      validatedRecords
     };
   }
 
-  static async executeImport(filename: string, validatedRecords: any, duplicateStrategy: string) {
-    // Re-import into client storage
+  static async executeImport(filename: string, validatedRecords: any[], duplicateStrategy: string) {
+    const currentTopics = getStored<StoredTopic[]>('mcq_topics', []);
+    const currentSubtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+    const currentQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
+
+    let imported = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (const r of validatedRecords) {
+      if (!currentTopics.some(t => t.id === r.topicId)) {
+        currentTopics.push({
+          id: r.topicId,
+          name: r.topicName,
+          slug: r.topicId,
+          description: r.topicDescription || '',
+          sort_order: currentTopics.length,
+          is_active: 1
+        });
+      }
+
+      if (!currentSubtopics.some(s => s.id === r.subtopicId)) {
+        currentSubtopics.push({
+          id: r.subtopicId,
+          topic_id: r.topicId,
+          name: r.subtopicName,
+          slug: r.subtopicId,
+          description: r.subtopicDescription || '',
+          sort_order: currentSubtopics.length,
+          is_active: 1
+        });
+      }
+    }
+
+    for (const r of validatedRecords) {
+      if (r.isDuplicate) {
+        if (duplicateStrategy === 'skip_duplicate') {
+          skipped++;
+          continue;
+        } else if (duplicateStrategy === 'update_existing' && r.existingQuestionId) {
+          const existingIdx = currentQuestions.findIndex(q => q.id === r.existingQuestionId);
+          if (existingIdx >= 0) {
+            currentQuestions[existingIdx] = {
+              ...currentQuestions[existingIdx],
+              topic_id: r.topicId,
+              subtopic_id: r.subtopicId,
+              question_text: r.questionText,
+              explanation: r.explanation,
+              difficulty: r.difficulty,
+              correct_answer: r.correctAnswer,
+              options: r.options
+            };
+            updated++;
+            continue;
+          }
+        }
+      }
+
+      const newId = (duplicateStrategy === 'import_as_new' || r.isDuplicate)
+        ? `q_${r.subtopicId}_${Math.random().toString(36).substring(2, 8)}`
+        : (r.externalId || `q_${r.subtopicId}_${Math.random().toString(36).substring(2, 8)}`);
+
+      currentQuestions.push({
+        id: newId,
+        external_id: r.externalId,
+        topic_id: r.topicId,
+        subtopic_id: r.subtopicId,
+        question_text: r.questionText,
+        explanation: r.explanation || '',
+        difficulty: r.difficulty || 'medium',
+        correct_answer: r.correctAnswer || 'A',
+        is_active: 1,
+        options: r.options || []
+      });
+      imported++;
+    }
+
+    setStored('mcq_topics', currentTopics);
+    setStored('mcq_subtopics', currentSubtopics);
+    setStored('mcq_questions', currentQuestions);
+
+    const history = getStored<any[]>('mcq_import_history', []);
+    const jobId = 'job_' + Math.random().toString(36).substring(2, 10);
+    history.unshift({
+      id: jobId,
+      filename,
+      total_processed: validatedRecords.length,
+      new_imported: imported,
+      updated_records: updated,
+      skipped_records: skipped,
+      created_at: new Date().toISOString()
+    });
+    setStored('mcq_import_history', history.slice(0, 20));
+
     return {
       success: true,
-      imported: 362,
-      skipped: 0,
-      updated: 0
+      jobId,
+      total: validatedRecords.length,
+      imported,
+      updated,
+      skipped
     };
   }
 
   static async getImportHistory() {
-    return [];
+    return getStored<any[]>('mcq_import_history', []);
   }
 
   static async getContentHealth() {
