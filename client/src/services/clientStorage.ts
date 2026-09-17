@@ -1,4 +1,5 @@
 import defaultData from '../data/dermatology_mcqs.json';
+import pharmacologyData from '../data/pharmacology_mcqs.json';
 
 export interface StoredUser {
   id: string;
@@ -108,6 +109,67 @@ export interface StoredAchievement {
   requirement_value: number;
 }
 
+// Helper to parse hierarchical topics/subtopics/questions from JSON into storage
+function parseDatasetToStorage(rawData: any, topics: StoredTopic[], subtopics: StoredSubtopic[], questions: StoredQuestion[]) {
+  const topicsList = Array.isArray(rawData) ? (rawData[0]?.topics || rawData) : (rawData?.topics || []);
+  if (Array.isArray(topicsList)) {
+    for (const t of topicsList) {
+      const topicId = t.id || 'topic_' + Math.random().toString(36).substring(2, 8);
+      if (!topics.some(existing => existing.id === topicId)) {
+        topics.push({
+          id: topicId,
+          name: t.name,
+          slug: t.id || topicId,
+          description: t.description || '',
+          sort_order: topics.length,
+          is_active: 1
+        });
+      }
+
+      if (t.subtopics && Array.isArray(t.subtopics)) {
+        for (const s of t.subtopics) {
+          const subtopicId = s.id || 'sub_' + Math.random().toString(36).substring(2, 8);
+          if (!subtopics.some(existing => existing.id === subtopicId)) {
+            subtopics.push({
+              id: subtopicId,
+              topic_id: topicId,
+              name: s.name,
+              slug: s.id || subtopicId,
+              description: s.description || '',
+              sort_order: subtopics.length,
+              is_active: 1
+            });
+          }
+
+          if (s.questions && Array.isArray(s.questions)) {
+            for (let i = 0; i < s.questions.length; i++) {
+              const q = s.questions[i];
+              const qId = q.id || `q_${subtopicId}_${i}`;
+              if (!questions.some(existing => existing.id === qId || existing.external_id === q.id)) {
+                questions.push({
+                  id: qId,
+                  external_id: q.id,
+                  topic_id: topicId,
+                  subtopic_id: subtopicId,
+                  question_text: q.question || q.question_text || '',
+                  explanation: q.explanation || '',
+                  difficulty: q.difficulty || 'medium',
+                  correct_answer: (q.correct_answer || 'A').toUpperCase(),
+                  is_active: 1,
+                  options: (q.options || []).map((opt: any) => ({
+                    key: opt.key,
+                    text: opt.text
+                  }))
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 // Ensure initial dataset is loaded in localStorage
 export function initClientStorage(forceReseed = false) {
   if (localStorage.getItem('mcq_cleared') === 'true' && !forceReseed) {
@@ -116,6 +178,14 @@ export function initClientStorage(forceReseed = false) {
   const existingQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
   const existingTopics = getStored<StoredTopic[]>('mcq_topics', []);
   if (!forceReseed && localStorage.getItem('mcq_v2_initialized') && existingQuestions.length > 0 && existingTopics.length > 0) {
+    // Seamless auto-migration: ensure pharmacology questions are available in existing sessions
+    if (!existingTopics.some(t => t.id === 'prescription-and-dosage-calculations')) {
+      const existingSubtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+      parseDatasetToStorage(pharmacologyData, existingTopics, existingSubtopics, existingQuestions);
+      setStored('mcq_topics', existingTopics);
+      setStored('mcq_subtopics', existingSubtopics);
+      setStored('mcq_questions', existingQuestions);
+    }
     return;
   }
 
@@ -154,57 +224,8 @@ export function initClientStorage(forceReseed = false) {
   const subtopics: StoredSubtopic[] = [];
   const questions: StoredQuestion[] = [];
 
-  const rawData: any = defaultData;
-  if (rawData && rawData.topics && Array.isArray(rawData.topics)) {
-    for (const t of rawData.topics) {
-      const topicId = t.id || 'topic_' + Math.random().toString(36).substring(2, 8);
-      topics.push({
-        id: topicId,
-        name: t.name,
-        slug: t.id || topicId,
-        description: t.description || '',
-        sort_order: 0,
-        is_active: 1
-      });
-
-      if (t.subtopics && Array.isArray(t.subtopics)) {
-        for (const s of t.subtopics) {
-          const subtopicId = s.id || 'sub_' + Math.random().toString(36).substring(2, 8);
-          subtopics.push({
-            id: subtopicId,
-            topic_id: topicId,
-            name: s.name,
-            slug: s.id || subtopicId,
-            description: s.description || '',
-            sort_order: 0,
-            is_active: 1
-          });
-
-          if (s.questions && Array.isArray(s.questions)) {
-            for (let i = 0; i < s.questions.length; i++) {
-              const q = s.questions[i];
-              const qId = q.id || `q_${subtopicId}_${i}`;
-              questions.push({
-                id: qId,
-                external_id: q.id,
-                topic_id: topicId,
-                subtopic_id: subtopicId,
-                question_text: q.question,
-                explanation: q.explanation || '',
-                difficulty: q.difficulty || 'medium',
-                correct_answer: (q.correct_answer || 'A').toUpperCase(),
-                is_active: 1,
-                options: (q.options || []).map((opt: any) => ({
-                  key: opt.key,
-                  text: opt.text
-                }))
-              });
-            }
-          }
-        }
-      }
-    }
-  }
+  parseDatasetToStorage(defaultData, topics, subtopics, questions);
+  parseDatasetToStorage(pharmacologyData, topics, subtopics, questions);
 
   // 3. Initial Achievements
   const achievements: StoredAchievement[] = [

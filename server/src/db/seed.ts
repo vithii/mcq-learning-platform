@@ -169,6 +169,33 @@ export async function seedDefaultQuestions() {
       });
       console.log(`Auto-seeded ${preview.validatedRecords.length} questions from ${path.basename(jsonPath)}`);
     }
+
+    const pharmCandidatePaths = [
+      '/var/task/pharmacology_mcqs.json',
+      path.resolve('/var/task', 'pharmacology_mcqs.json'),
+      path.resolve(process.cwd(), 'pharmacology_mcqs.json'),
+      path.resolve(__dirname, 'pharmacology_mcqs.json'),
+      path.resolve(__dirname, '../pharmacology_mcqs.json'),
+      path.resolve(__dirname, '../../pharmacology_mcqs.json'),
+      path.resolve(__dirname, '../../../pharmacology_mcqs.json'),
+      path.resolve(__dirname, '../../../../pharmacology_mcqs.json'),
+      path.resolve(__dirname, '../data/pharmacology_mcqs.json'),
+      path.resolve(process.cwd(), 'client/src/data/pharmacology_mcqs.json')
+    ];
+    const pharmPath = pharmCandidatePaths.find(p => fs.existsSync(p));
+    if (pharmPath) {
+      const pharmRaw = fs.readFileSync(pharmPath, 'utf8');
+      const pharmPreview = await ImportService.validateAndPreview(pharmRaw);
+      if (pharmPreview.isValid && pharmPreview.validatedRecords.length > 0) {
+        await ImportService.executeImport({
+          adminUserId: 'usr_system_seed',
+          filename: 'pharmacology_mcqs.json',
+          validatedRecords: pharmPreview.validatedRecords,
+          duplicateStrategy: 'update_existing'
+        });
+        console.log(`Auto-seeded ${pharmPreview.validatedRecords.length} questions from ${path.basename(pharmPath)}`);
+      }
+    }
   } catch (err) {
     console.error('Failed to auto-seed default questions:', err);
   }
