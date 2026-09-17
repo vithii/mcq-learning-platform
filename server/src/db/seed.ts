@@ -140,9 +140,14 @@ export async function seedDefaultQuestions() {
     }
 
     const candidatePaths = [
-      path.resolve(__dirname, '../../../dermatology_mcqs.json'),
-      path.resolve(__dirname, '../../dermatology_mcqs.json'),
+      '/var/task/dermatology_mcqs.json',
+      path.resolve('/var/task', 'dermatology_mcqs.json'),
       path.resolve(process.cwd(), 'dermatology_mcqs.json'),
+      path.resolve(__dirname, 'dermatology_mcqs.json'),
+      path.resolve(__dirname, '../dermatology_mcqs.json'),
+      path.resolve(__dirname, '../../dermatology_mcqs.json'),
+      path.resolve(__dirname, '../../../dermatology_mcqs.json'),
+      path.resolve(__dirname, '../../../../dermatology_mcqs.json'),
       path.resolve(__dirname, '../data/dermatology_mcqs.json'),
       path.resolve(process.cwd(), 'client/src/data/dermatology_mcqs.json')
     ];
