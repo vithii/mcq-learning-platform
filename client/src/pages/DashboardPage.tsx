@@ -107,7 +107,7 @@ export const DashboardPage: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
             <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)' }}>
-              Welcome back, {user?.name.split(' ')[0]}!
+              Welcome back, {(user?.name || 'Learner').split(' ')[0]}!
             </h1>
             <span style={{ fontSize: '1.5rem' }}>👋</span>
           </div>
@@ -165,7 +165,7 @@ export const DashboardPage: React.FC = () => {
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>OVERALL ACCURACY</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-              {stats.overallAccuracy || 0}%
+              {stats.overallAccuracy ?? stats.accuracy ?? 0}%
             </div>
           </div>
         </div>
@@ -556,7 +556,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <Link to={rec.actionUrl} className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'space-between' }}>
+                  <Link to={rec.actionUrl || rec.link || '/quiz/setup'} className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'space-between' }}>
                     <span>Take Action</span>
                     <ArrowRight size={16} />
                   </Link>

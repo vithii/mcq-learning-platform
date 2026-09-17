@@ -7,6 +7,10 @@ export const handler = async (event: any, context: any) => {
   if (context) {
     context.callbackWaitsForEmptyEventLoop = false;
   }
-  await ensureDatabaseInitialized();
+  try {
+    await ensureDatabaseInitialized();
+  } catch (err) {
+    console.error('Database initialization warning in Netlify Function:', err);
+  }
   return serverlessHandler(event, context);
 };

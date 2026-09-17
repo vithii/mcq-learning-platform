@@ -96,6 +96,10 @@ export async function seedAchievements() {
   }
 }
 
+import fs from 'fs';
+import path from 'path';
+import { ImportService } from '../services/importService';
+
 export async function seedDefaultUsers() {
   const existingAdmin = await queryOne('SELECT id FROM users WHERE role = ? LIMIT 1', ['admin']);
   if (!existingAdmin) {
@@ -111,21 +115,74 @@ export async function seedDefaultUsers() {
     );
     console.log(`Initial Admin created: ${adminEmail} (password: ${adminPass})`);
   }
+
+  const existingDemo = await queryOne('SELECT id FROM users WHERE email = ? LIMIT 1', ['user@mcqplatform.local']);
+  if (!existingDemo) {
+    const demoId = 'usr_demo_' + crypto.randomBytes(4).toString('hex');
+    const demoPass = 'UserPass123!';
+    const demoEmail = 'user@mcqplatform.local';
+    const hash = await bcrypt.hash(demoPass, 10);
+
+    await execute(
+      `INSERT INTO users (id, name, email, password_hash, role, avatar_url, xp, level, current_streak, longest_streak, status)
+       VALUES (?, ?, ?, ?, 'user', ?, 120, 2, 2, 3, 'active')`,
+      [demoId, 'Demo Learner', demoEmail, hash, 'https://api.dicebear.com/7.x/adventurer/svg?seed=demo']
+    );
+    console.log(`Demo User created: ${demoEmail} (password: ${demoPass})`);
+  }
+}
+
+export async function seedDefaultQuestions() {
+  try {
+    const countRow = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM questions');
+    if (countRow && countRow.count > 0) {
+      return;
+    }
+
+    const candidatePaths = [
+      path.resolve(__dirname, '../../../dermatology_mcqs.json'),
+      path.resolve(__dirname, '../../dermatology_mcqs.json'),
+      path.resolve(process.cwd(), 'dermatology_mcqs.json'),
+      path.resolve(__dirname, '../data/dermatology_mcqs.json'),
+      path.resolve(process.cwd(), 'client/src/data/dermatology_mcqs.json')
+    ];
+
+    const jsonPath = candidatePaths.find(p => fs.existsSync(p));
+    if (!jsonPath) {
+      console.log('No default questions JSON file found to seed.');
+      return;
+    }
+
+    const raw = fs.readFileSync(jsonPath, 'utf8');
+    const preview = await ImportService.validateAndPreview(raw);
+    if (preview.isValid && preview.validatedRecords.length > 0) {
+      await ImportService.executeImport({
+        adminUserId: 'usr_system_seed',
+        filename: 'dermatology_mcqs.json',
+        validatedRecords: preview.validatedRecords,
+        duplicateStrategy: 'update_existing'
+      });
+      console.log(`Auto-seeded ${preview.validatedRecords.length} questions from ${path.basename(jsonPath)}`);
+    }
+  } catch (err) {
+    console.error('Failed to auto-seed default questions:', err);
+  }
 }
 
 export async function runAllSeeds() {
   await initDatabase();
   await seedAchievements();
   await seedDefaultUsers();
-  // NO pre-seeded questions! All questions are imported strictly through JSON.
+  await seedDefaultQuestions();
 }
 
 if (require.main === module) {
   runAllSeeds().then(() => {
-    console.log('Seeds completed without dummy questions.');
+    console.log('Seeds completed successfully.');
     process.exit(0);
   }).catch((err) => {
     console.error('Seed error:', err);
     process.exit(1);
   });
 }
+

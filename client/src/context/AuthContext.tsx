@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      if (!ApiClient['getToken']()) {
+      if (!ApiClient.getToken()) {
         setUser(null);
         setLoading(false);
         return;

@@ -5,6 +5,8 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  external_node_modules = ["@libsql/client"]
+  included_files = ["dermatology_mcqs.json"]
 
 [[redirects]]
   from = "/api/*"

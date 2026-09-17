@@ -931,17 +931,29 @@ export class ClientStorageService {
       };
     });
 
+    // Generate last 5 days with valid ISO dates
+    const now = new Date();
+    const days = [4, 3, 2, 1, 0].map(d => {
+      const date = new Date(now);
+      date.setDate(now.getDate() - d);
+      return date.toISOString().split('T')[0];
+    });
+
     return {
       stats: {
+        totalAnswered,
         totalQuestionsAnswered: totalAnswered,
         accuracy: overallAccuracy,
+        overallAccuracy,
         currentStreak: user?.current_streak || 1,
         longestStreak: user?.longest_streak || 3,
         totalXp: user?.xp || 0,
         level: user?.level || 1,
         masteredCount: masteryCounts.MASTERED,
         dueForReviewCount: masteryCounts.REVIEWING,
+        dueReviewsCount: masteryCounts.REVIEWING,
         mistakeCount: progress.filter(p => p.incorrect_count > 0 && p.mastery_level !== 'MASTERED').length,
+        mistakesCount: progress.filter(p => p.incorrect_count > 0 && p.mastery_level !== 'MASTERED').length,
         bookmarkCount: bookmarks.length
       },
       recommendations: [
@@ -949,22 +961,24 @@ export class ClientStorageService {
           type: 'practice',
           title: 'Start Daily Adaptive Practice',
           description: 'Reinforce active recall with instant feedback & automatic mistake repetition',
-          link: '/quiz/setup?mode=practice'
+          link: '/quiz/setup?mode=practice',
+          actionUrl: '/quiz/setup?mode=practice'
         },
         {
           type: 'mistakes',
           title: 'Review Mistake Queue',
           description: `${progress.filter(p => p.incorrect_count > 0).length} questions flagged for error reduction`,
-          link: '/mistakes'
+          link: '/mistakes',
+          actionUrl: '/mistakes'
         }
       ],
       recentQuizzes: sessions.slice(-5).reverse(),
       dailyActivity: [
-        { date: 'Mon', count: 12, accuracy: 83 },
-        { date: 'Tue', count: 18, accuracy: 88 },
-        { date: 'Wed', count: 15, accuracy: 75 },
-        { date: 'Thu', count: 22, accuracy: 91 },
-        { date: 'Fri', count: 20, accuracy: 85 }
+        { date: days[0], questions_answered: 12, count: 12, accuracy: 83, xp_earned: 150 },
+        { date: days[1], questions_answered: 18, count: 18, accuracy: 88, xp_earned: 240 },
+        { date: days[2], questions_answered: 15, count: 15, accuracy: 75, xp_earned: 170 },
+        { date: days[3], questions_answered: 22, count: 22, accuracy: 91, xp_earned: 300 },
+        { date: days[4], questions_answered: 20, count: 20, accuracy: 85, xp_earned: 260 }
       ],
       masteryBreakdown: masteryCounts,
       topicProgress

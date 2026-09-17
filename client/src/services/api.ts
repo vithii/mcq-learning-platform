@@ -19,7 +19,7 @@ export class ApiClient {
     localStorage.setItem('mcq_mode', 'client');
   }
 
-  private static getToken(): string | null {
+  public static getToken(): string | null {
     return localStorage.getItem('mcq_auth_token');
   }
 
