@@ -1007,12 +1007,58 @@ export class ClientStorageService {
       };
     });
 
-    // Generate last 5 days with valid ISO dates
+    // Gather all completed answers with timestamps from user's sessions & progress
+    const answersByDate = new Map<string, { count: number; correct: number; xp: number }>();
+    for (const s of sessions) {
+      for (const q of (s.questions || [])) {
+        if (q.is_completed === 1) {
+          const rawDate = q.answered_at || s.completed_at || s.started_at || '';
+          const dateStr = rawDate.split('T')[0];
+          if (dateStr) {
+            const entry = answersByDate.get(dateStr) || { count: 0, correct: 0, xp: 0 };
+            entry.count += 1;
+            if (q.is_correct === 1) {
+              entry.correct += 1;
+              entry.xp += 10;
+            }
+            answersByDate.set(dateStr, entry);
+          }
+        }
+      }
+    }
+
+    if (answersByDate.size === 0) {
+      for (const p of progress) {
+        if (p.attempts > 0 && p.last_answered_at) {
+          const dateStr = p.last_answered_at.split('T')[0];
+          const entry = answersByDate.get(dateStr) || { count: 0, correct: 0, xp: 0 };
+          entry.count += p.attempts;
+          entry.correct += p.correct_count;
+          entry.xp += p.correct_count * 10;
+          answersByDate.set(dateStr, entry);
+        }
+      }
+    }
+
+    // Generate last 5 days chronologically
     const now = new Date();
     const days = [4, 3, 2, 1, 0].map(d => {
       const date = new Date(now);
       date.setDate(now.getDate() - d);
       return date.toISOString().split('T')[0];
+    });
+
+    const realDailyActivity = days.map(dateStr => {
+      const entry = answersByDate.get(dateStr) || { count: 0, correct: 0, xp: 0 };
+      const acc = entry.count > 0 ? Math.round((entry.correct / entry.count) * 100) : 0;
+      return {
+        date: dateStr,
+        questions_answered: entry.count,
+        count: entry.count,
+        correct_answers: entry.correct,
+        accuracy: acc,
+        xp_earned: entry.xp
+      };
     });
 
     return {
@@ -1021,10 +1067,10 @@ export class ClientStorageService {
         totalQuestionsAnswered: totalAnswered,
         accuracy: overallAccuracy,
         overallAccuracy,
-        currentStreak: user?.current_streak || 1,
-        longestStreak: user?.longest_streak || 3,
-        totalXp: user?.xp || 0,
-        level: user?.level || 1,
+        currentStreak: user?.current_streak ?? 0,
+        longestStreak: user?.longest_streak ?? 0,
+        totalXp: user?.xp ?? 0,
+        level: user?.level ?? 1,
         masteredCount: masteryCounts.MASTERED,
         dueForReviewCount: masteryCounts.REVIEWING,
         dueReviewsCount: masteryCounts.REVIEWING,
@@ -1049,24 +1095,104 @@ export class ClientStorageService {
         }
       ],
       recentQuizzes: sessions.slice(-5).reverse(),
-      dailyActivity: [
-        { date: days[0], questions_answered: 12, count: 12, accuracy: 83, xp_earned: 150 },
-        { date: days[1], questions_answered: 18, count: 18, accuracy: 88, xp_earned: 240 },
-        { date: days[2], questions_answered: 15, count: 15, accuracy: 75, xp_earned: 170 },
-        { date: days[3], questions_answered: 22, count: 22, accuracy: 91, xp_earned: 300 },
-        { date: days[4], questions_answered: 20, count: 20, accuracy: 85, xp_earned: 260 }
-      ],
+      dailyActivity: realDailyActivity,
       masteryBreakdown: masteryCounts,
       topicProgress
     };
   }
 
   static async getDetailedAnalytics() {
+    initClientStorage();
+    const userId = this.getCurrentUserId();
     const dash = await this.getDashboard();
+    const questions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const topics = getStored<StoredTopic[]>('mcq_topics', []);
+    const subtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+    const progress = getStored<StoredProgress[]>('mcq_progress', []).filter(p => p.user_id === userId);
+    const sessions = getStored<StoredQuizSession[]>('mcq_sessions', []).filter(s => s.user_id === userId);
+
+    // Topic stats
+    const topicStats = topics.map(t => {
+      const topicQuestions = questions.filter(q => q.topic_id === t.id);
+      const topicProgress = progress.filter(p => topicQuestions.some(q => q.id === p.question_id));
+      const totalAttempts = topicProgress.reduce((sum, p) => sum + p.attempts, 0);
+      const correctAttempts = topicProgress.reduce((sum, p) => sum + p.correct_count, 0);
+      const masteredCount = topicProgress.filter(p => p.mastery_level === 'MASTERED').length;
+      return {
+        topic_id: t.id,
+        topic_name: t.name,
+        total_attempts: totalAttempts,
+        correct_attempts: correctAttempts,
+        accuracy: totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : null,
+        mastered_count: masteredCount
+      };
+    });
+
+    // Subtopic stats
+    const subtopicStats = subtopics.map(s => {
+      const parentTopic = topics.find(t => t.id === s.topic_id);
+      const subQuestions = questions.filter(q => q.subtopic_id === s.id);
+      const subProgress = progress.filter(p => subQuestions.some(q => q.id === p.question_id));
+      const totalAttempts = subProgress.reduce((sum, p) => sum + p.attempts, 0);
+      const correctAttempts = subProgress.reduce((sum, p) => sum + p.correct_count, 0);
+      return {
+        subtopic_id: s.id,
+        subtopic_name: s.name,
+        topic_name: parentTopic?.name || 'General',
+        total_attempts: totalAttempts,
+        correct_attempts: correctAttempts,
+        accuracy: totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : null
+      };
+    });
+
+    // 7-day vs previous 7-14 day improvement
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+
+    let currTotal = 0;
+    let currCorrect = 0;
+    let prevTotal = 0;
+    let prevCorrect = 0;
+
+    for (const s of sessions) {
+      for (const q of (s.questions || [])) {
+        if (q.is_completed === 1) {
+          const t = new Date(q.answered_at || s.completed_at || s.started_at || 0).getTime();
+          if (t >= sevenDaysAgo) {
+            currTotal++;
+            if (q.is_correct === 1) currCorrect++;
+          } else if (t >= fourteenDaysAgo) {
+            prevTotal++;
+            if (q.is_correct === 1) prevCorrect++;
+          }
+        }
+      }
+    }
+
+    const currAcc = currTotal > 0 ? Math.round((currCorrect / currTotal) * 100) : (dash.stats.accuracy || null);
+    const prevAcc = prevTotal > 0 ? Math.round((prevCorrect / prevTotal) * 100) : null;
+    let percentagePointsDiff: number | null = null;
+    if (currAcc !== null && prevAcc !== null) {
+      percentagePointsDiff = currAcc - prevAcc;
+    }
+
+    const interpretation = percentagePointsDiff !== null
+      ? percentagePointsDiff >= 0
+        ? `+${percentagePointsDiff} percentage points improvement`
+        : `${percentagePointsDiff} percentage points change`
+      : 'Complete more quizzes across multiple days to view your improvement trend.';
+
     return {
       ...dash,
-      improvementPercentage: 6.8,
-      averageResponseTimeSec: 4.2
+      topicStats,
+      subtopicStats,
+      improvement: {
+        currentPeriodAccuracy: currAcc,
+        previousPeriodAccuracy: prevAcc,
+        percentagePointsDiff,
+        interpretation
+      }
     };
   }
 

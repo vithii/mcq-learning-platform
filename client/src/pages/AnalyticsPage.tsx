@@ -49,18 +49,18 @@ export const AnalyticsPage: React.FC = () => {
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>CURRENT 7-DAY ACCURACY</div>
             <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              {improvement?.currentPeriodAccuracy !== null ? `${improvement.currentPeriodAccuracy}%` : 'N/A'}
+              {improvement?.currentPeriodAccuracy != null ? `${improvement.currentPeriodAccuracy}%` : 'N/A'}
             </div>
           </div>
 
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>PREVIOUS 7-DAY ACCURACY</div>
             <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-              {improvement?.previousPeriodAccuracy !== null ? `${improvement.previousPeriodAccuracy}%` : 'N/A'}
+              {improvement?.previousPeriodAccuracy != null ? `${improvement.previousPeriodAccuracy}%` : 'N/A'}
             </div>
           </div>
 
-          {improvement?.percentagePointsDiff !== null && (
+          {improvement?.percentagePointsDiff != null && (
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600 }}>PERCENTAGE-POINT CHANGE</div>
               <div style={{
@@ -75,7 +75,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          {improvement?.interpretation}
+          {improvement?.interpretation || 'Complete quizzes across multiple days to view your improvement trend.'}
         </p>
       </div>
 
@@ -109,13 +109,15 @@ export const AnalyticsPage: React.FC = () => {
                         <span style={{
                           fontWeight: 700,
                           minWidth: '40px',
-                          color: t.accuracy >= 80 ? 'var(--success)' : t.accuracy >= 60 ? 'var(--warning)' : 'var(--danger)'
+                          color: t.accuracy != null ? (t.accuracy >= 80 ? 'var(--success)' : t.accuracy >= 60 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-dim)'
                         }}>
-                          {t.accuracy}%
+                          {t.accuracy != null ? `${t.accuracy}%` : 'N/A'}
                         </span>
-                        <div className="progress-bar-track" style={{ width: '100px', height: '6px' }}>
-                          <div className="progress-bar-fill" style={{ width: `${t.accuracy}%` }} />
-                        </div>
+                        {t.accuracy != null && (
+                          <div className="progress-bar-track" style={{ width: '100px', height: '6px' }}>
+                            <div className="progress-bar-fill" style={{ width: `${t.accuracy}%` }} />
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -160,9 +162,9 @@ export const AnalyticsPage: React.FC = () => {
                     <td>
                       <span style={{
                         fontWeight: 700,
-                        color: s.accuracy >= 80 ? 'var(--success)' : s.accuracy >= 60 ? 'var(--warning)' : 'var(--danger)'
+                        color: s.accuracy != null ? (s.accuracy >= 80 ? 'var(--success)' : s.accuracy >= 60 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-dim)'
                       }}>
-                        {s.accuracy}%
+                        {s.accuracy != null ? `${s.accuracy}%` : 'N/A'}
                       </span>
                     </td>
                   </tr>
