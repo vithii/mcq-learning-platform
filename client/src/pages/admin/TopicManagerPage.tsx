@@ -24,7 +24,8 @@ export const TopicManagerPage: React.FC = () => {
   const fetchTopics = async () => {
     try {
       const res = await ApiClient.getTopics();
-      setTopics(res.topics || []);
+      const list = res?.topics || (Array.isArray(res) ? res : []);
+      setTopics(list);
     } catch (err: any) {
       addToast({ type: 'error', message: err.message || 'Failed to load topics' });
     } finally {
@@ -106,8 +107,42 @@ export const TopicManagerPage: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {topics.map(t => (
+      {topics.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-dim)' }}>
+          <FolderTree size={40} style={{ margin: '0 auto 1rem', opacity: 0.35, color: 'var(--primary-light)' }} />
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>No Topics Found</h3>
+          <p style={{ maxWidth: '420px', margin: '0 auto 1.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+            No topics exist yet. Create a topic hierarchy or load the default question bank.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setTopicModalOpen(true)}
+              className="btn btn-primary"
+            >
+              <Plus size={16} />
+              <span>Create Topic</span>
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await ApiClient.restoreDefaultQuestionBank();
+                  addToast({ type: 'success', message: 'Default topics and questions restored!' });
+                  fetchTopics();
+                } catch (err: any) {
+                  addToast({ type: 'error', message: err.message || 'Failed to restore' });
+                }
+              }}
+              className="btn btn-secondary"
+            >
+              <span>Restore Default Questions</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {topics.map(t => (
           <div key={t.id} className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
               <div>
@@ -169,7 +204,8 @@ export const TopicManagerPage: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* New Topic Modal */}
       <Modal isOpen={topicModalOpen} onClose={() => setTopicModalOpen(false)} title="Create New Topic">

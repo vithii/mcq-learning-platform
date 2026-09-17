@@ -167,7 +167,10 @@ export class ApiClient {
   static async getTopics() {
     return this.executeWithFallback(
       () => this.request('/topics'),
-      () => ClientStorageService.getTopics()
+      async () => {
+        const topics = await ClientStorageService.getTopics();
+        return { topics: Array.isArray(topics) ? topics : (topics as any)?.topics || [] };
+      }
     );
   }
 
@@ -479,6 +482,28 @@ export class ApiClient {
         body: JSON.stringify(updates)
       }),
       () => ClientStorageService.updateAdminUser(id, updates)
+    );
+  }
+
+  // Quiz progress and question bank management
+  static async resetQuizProgress() {
+    return this.executeWithFallback(
+      () => this.request('/admin/reset-progress', { method: 'POST' }),
+      () => ClientStorageService.resetQuizProgress()
+    );
+  }
+
+  static async emptyQuestionBank() {
+    return this.executeWithFallback(
+      () => this.request('/admin/empty-bank', { method: 'POST' }),
+      () => ClientStorageService.emptyQuestionBank()
+    );
+  }
+
+  static async restoreDefaultQuestionBank() {
+    return this.executeWithFallback(
+      () => this.request('/admin/restore-defaults', { method: 'POST' }),
+      () => ClientStorageService.restoreDefaultQuestionBank()
     );
   }
 }

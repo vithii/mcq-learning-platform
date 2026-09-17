@@ -109,8 +109,13 @@ export interface StoredAchievement {
 }
 
 // Ensure initial dataset is loaded in localStorage
-export function initClientStorage() {
-  if (localStorage.getItem('mcq_v2_initialized')) {
+export function initClientStorage(forceReseed = false) {
+  if (localStorage.getItem('mcq_cleared') === 'true' && !forceReseed) {
+    return;
+  }
+  const existingQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
+  const existingTopics = getStored<StoredTopic[]>('mcq_topics', []);
+  if (!forceReseed && localStorage.getItem('mcq_v2_initialized') && existingQuestions.length > 0 && existingTopics.length > 0) {
     return;
   }
 
@@ -572,7 +577,60 @@ export class ClientStorageService {
   }
 
   static async deleteQuestionsByFilter(filter: any) {
-    return { count: 0 };
+    let questions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const initialCount = questions.length;
+    questions = questions.filter(q => {
+      if (filter.topicId && filter.topicId !== 'all' && q.topic_id !== filter.topicId) return true;
+      if (filter.subtopicId && filter.subtopicId !== 'all' && q.subtopic_id !== filter.subtopicId) return true;
+      if (filter.difficulty && filter.difficulty !== 'all' && q.difficulty !== filter.difficulty) return true;
+      if (filter.search) {
+        const s = filter.search.toLowerCase();
+        const matches = q.question_text.toLowerCase().includes(s) || (q.explanation && q.explanation.toLowerCase().includes(s));
+        if (!matches) return true;
+      }
+      return false;
+    });
+    const deletedCount = initialCount - questions.length;
+    setStored('mcq_questions', questions);
+    return { count: deletedCount };
+  }
+
+  // Reset quiz sessions, answers, and learner progress back to zero
+  static async resetQuizProgress() {
+    setStored('mcq_progress', []);
+    setStored('mcq_sessions', []);
+    setStored('mcq_attempts', []);
+    setStored('mcq_bookmarks', []);
+    const users = getStored<StoredUser[]>('mcq_users', []);
+    users.forEach(u => {
+      u.xp = 0;
+      u.level = 1;
+      u.current_streak = 0;
+      u.longest_streak = 0;
+    });
+    setStored('mcq_users', users);
+    return { success: true, message: 'All quiz sessions, attempts, and progress have been reset.' };
+  }
+
+  // Completely empty all questions, topics, subtopics, and quizzes
+  static async emptyQuestionBank() {
+    setStored('mcq_questions', []);
+    setStored('mcq_topics', []);
+    setStored('mcq_subtopics', []);
+    setStored('mcq_progress', []);
+    setStored('mcq_sessions', []);
+    setStored('mcq_attempts', []);
+    setStored('mcq_bookmarks', []);
+    localStorage.setItem('mcq_cleared', 'true');
+    return { success: true, message: 'Question bank and topics have been completely emptied.' };
+  }
+
+  // Restore initial default question bank from bundled JSON
+  static async restoreDefaultQuestionBank() {
+    localStorage.removeItem('mcq_cleared');
+    localStorage.removeItem('mcq_v2_initialized');
+    initClientStorage(true);
+    return { success: true, message: 'Default question bank restored successfully.' };
   }
 
   // QUIZZES & ADAPTIVE ACTIVE RECALL ENGINE
@@ -905,27 +963,45 @@ export class ClientStorageService {
 
     const topicProgress = topics.map(t => {
       const topSubs = subtopics.filter(s => s.topic_id === t.id);
-      const topQuestions = questions.filter(q => q.topic_id === t.id);
+      const topQuestions = questions.filter(q => q.topic_id === t.id && q.is_active);
       const topProgress = progress.filter(p => topQuestions.some(q => q.id === p.question_id));
       const mastered = topProgress.filter(p => p.mastery_level === 'MASTERED').length;
       const answered = topProgress.reduce((acc, p) => acc + p.attempts, 0);
       const correct = topProgress.reduce((acc, p) => acc + p.correct_count, 0);
+      const attemptedCount = topProgress.filter(p => p.attempts > 0).length;
 
       return {
         id: t.id,
         name: t.name,
+        description: t.description || '',
+        question_count: topQuestions.length,
         totalQuestions: topQuestions.length,
+        attempted_count: attemptedCount,
+        mastered_count: mastered,
         masteredQuestions: mastered,
-        accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
+        progress_percent: topQuestions.length > 0 ? Math.min(100, Math.round((attemptedCount / topQuestions.length) * 100)) : 0,
+        mastery_percent: topQuestions.length > 0 ? Math.min(100, Math.round((mastered / topQuestions.length) * 100)) : 0,
+        accuracy: answered > 0 ? Math.round((correct / answered) * 100) : null,
         subtopics: topSubs.map(s => {
           const subQuestions = topQuestions.filter(q => q.subtopic_id === s.id);
           const subProgress = progress.filter(p => subQuestions.some(q => q.id === p.question_id));
+          const subAttempted = subProgress.filter(p => p.attempts > 0).length;
+          const subMastered = subProgress.filter(p => p.mastery_level === 'MASTERED').length;
+          const subAnswered = subProgress.reduce((acc, p) => acc + p.attempts, 0);
+          const subCorrect = subProgress.reduce((acc, p) => acc + p.correct_count, 0);
+          const subAccuracy = subAnswered > 0 ? Math.round((subCorrect / subAnswered) * 100) : null;
           return {
             id: s.id,
             name: s.name,
+            description: s.description || '',
+            question_count: subQuestions.length,
             totalQuestions: subQuestions.length,
-            masteredQuestions: subProgress.filter(p => p.mastery_level === 'MASTERED').length,
-            accuracy: subProgress.length > 0 ? Math.round((subProgress.filter(p => p.correct_count > 0).length / subProgress.length) * 100) : 0
+            attempted_count: subAttempted,
+            mastered_count: subMastered,
+            masteredQuestions: subMastered,
+            progress_percent: subQuestions.length > 0 ? Math.min(100, Math.round((subAttempted / subQuestions.length) * 100)) : 0,
+            mastery_percent: subQuestions.length > 0 ? Math.min(100, Math.round((subMastered / subQuestions.length) * 100)) : 0,
+            accuracy: subAccuracy
           };
         })
       };

@@ -34,7 +34,7 @@ export const QuizSetupPage: React.FC = () => {
 
   useEffect(() => {
     ApiClient.getTopics()
-      .then(res => setTopics(res.topics || []))
+      .then(res => setTopics(res?.topics || (Array.isArray(res) ? res : [])))
       .catch(err => console.error('Failed to load topics:', err));
   }, []);
 

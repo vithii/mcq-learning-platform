@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiClient } from '../../services/api';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { useToast } from '../../context/ToastContext';
 import {
   ShieldCheck,
   Users,
@@ -13,15 +14,19 @@ import {
   Download,
   ArrowRight,
   TrendingUp,
-  FileCode
+  FileCode,
+  Trash2,
+  RotateCcw
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
+  const { addToast } = useToast();
   const [data, setData] = useState<any>(null);
   const [health, setHealth] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
 
-  useEffect(() => {
+  const loadData = () => {
     Promise.all([
       ApiClient.getAdminAnalytics(),
       ApiClient.getContentHealth()
@@ -32,10 +37,55 @@ export const AdminDashboardPage: React.FC = () => {
       })
       .catch(err => console.error('Failed to load admin dashboard:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const handleExportJSON = () => {
     window.open('/api/admin/export', '_blank');
+  };
+
+  const handleResetProgress = async () => {
+    if (!window.confirm('Reset all quiz sessions, answers, attempts, and learner progress back to zero? Questions will be kept.')) return;
+    setActing(true);
+    try {
+      await ApiClient.resetQuizProgress();
+      addToast({ type: 'success', message: 'All quiz sessions and learner progress have been reset.' });
+      loadData();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to reset progress' });
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handleEmptyBank = async () => {
+    if (!window.confirm('Are you sure you want to completely empty the question bank? All questions, topics, and quiz data will be deleted.')) return;
+    setActing(true);
+    try {
+      await ApiClient.emptyQuestionBank();
+      addToast({ type: 'success', message: 'Question bank has been completely emptied.' });
+      loadData();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to empty question bank' });
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handleRestoreDefaults = async () => {
+    setActing(true);
+    try {
+      await ApiClient.restoreDefaultQuestionBank();
+      addToast({ type: 'success', message: 'Default dermatology questions and topics restored!' });
+      loadData();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to restore default questions' });
+    } finally {
+      setActing(false);
+    }
   };
 
   if (loading) {
@@ -65,6 +115,41 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleResetProgress}
+            className="btn btn-secondary"
+            disabled={acting}
+            title="Clear all quiz sessions, answers, and learner progress"
+          >
+            <RotateCcw size={15} />
+            <span>Reset Quiz Progress</span>
+          </button>
+
+          {(metrics.totalQuestions || 0) > 0 ? (
+            <button
+              type="button"
+              onClick={handleEmptyBank}
+              className="btn btn-secondary"
+              style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+              disabled={acting}
+              title="Delete all questions and topics from the platform"
+            >
+              <Trash2 size={15} />
+              <span>Empty Question Bank</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleRestoreDefaults}
+              className="btn btn-secondary"
+              disabled={acting}
+              title="Restore initial 362 dermatology questions"
+            >
+              <span>Restore Default Questions</span>
+            </button>
+          )}
+
           <button type="button" onClick={handleExportJSON} className="btn btn-secondary">
             <Download size={16} />
             <span>Export Canonical JSON</span>

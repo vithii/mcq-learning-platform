@@ -297,10 +297,10 @@ export const DashboardPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
             {filteredTopics.map(topic => {
               const isCollapsed = !!collapsedTopics[topic.id];
-              const totalTopicQ = topic.question_count || 0;
+              const totalTopicQ = topic.question_count ?? topic.totalQuestions ?? 0;
               const attemptedTopicQ = topic.attempted_count || 0;
-              const masteredTopicQ = topic.mastered_count || 0;
-              const topicAccuracy = topic.accuracy;
+              const masteredTopicQ = topic.mastered_count ?? topic.masteredQuestions ?? 0;
+              const topicAccuracy = attemptedTopicQ > 0 ? topic.accuracy : null;
               const topicProgressPercent = topic.progress_percent || 0;
 
               return (
@@ -423,11 +423,11 @@ export const DashboardPage: React.FC = () => {
                         <div className="subtopic-tree-rail">
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
                             {topic.visibleSubtopics.map((sub: any) => {
-                              const subAccuracy = sub.accuracy;
-                              const subProgress = sub.progress_percent || 0;
-                              const subMastered = sub.mastered_count || 0;
                               const subAttempted = sub.attempted_count || 0;
-                              const subTotal = sub.question_count || 0;
+                              const subAccuracy = subAttempted > 0 ? sub.accuracy : null;
+                              const subProgress = sub.progress_percent || 0;
+                              const subMastered = sub.mastered_count ?? sub.masteredQuestions ?? 0;
+                              const subTotal = sub.question_count ?? sub.totalQuestions ?? 0;
 
                               return (
                                 <div key={sub.id} className="subtopic-tree-card">

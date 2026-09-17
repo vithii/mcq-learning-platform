@@ -47,7 +47,7 @@ export const QuestionManagerPage: React.FC = () => {
   // Load topics for filter dropdown
   const loadTopics = useCallback(() => {
     ApiClient.getTopics()
-      .then(res => setTopics(res.topics || []))
+      .then(res => setTopics(res?.topics || (Array.isArray(res) ? res : [])))
       .catch(err => console.error('Failed to load topics:', err));
   }, []);
 
@@ -186,6 +186,38 @@ export const QuestionManagerPage: React.FC = () => {
     }
   };
 
+  const handleEmptyQuestionBank = async () => {
+    if (!window.confirm('Are you sure you want to completely empty the quiz question bank and topics? All existing questions and quizzes will be deleted.')) return;
+    setDeleting(true);
+    try {
+      await ApiClient.emptyQuestionBank();
+      addToast({ type: 'success', message: 'All questions, topics, and quiz sessions have been emptied.' });
+      setSelectedIds(new Set());
+      setPage(1);
+      fetchQuestions(1);
+      loadTopics();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to empty question bank' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleRestoreDefaults = async () => {
+    setLoading(true);
+    try {
+      await ApiClient.restoreDefaultQuestionBank();
+      addToast({ type: 'success', message: 'Default 362 dermatology questions and topics restored!' });
+      setPage(1);
+      fetchQuestions(1);
+      loadTopics();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to restore questions' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isSetFilterActive = topicId !== 'all' || subtopicId !== 'all' || search.trim().length > 0;
 
   return (
@@ -203,6 +235,31 @@ export const QuestionManagerPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Empty Quiz / Restore Default Controls */}
+          {total > 0 ? (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+              onClick={handleEmptyQuestionBank}
+              disabled={deleting}
+              title="Delete all questions and start with a blank database"
+            >
+              <Trash2 size={16} />
+              <span>Empty Quiz</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleRestoreDefaults}
+              disabled={loading}
+              title="Restore initial 362 dermatology questions"
+            >
+              <span>Restore Default Questions</span>
+            </button>
+          )}
+
           {/* One-Click Delete Set Button (active when filtered or focused) */}
           {isSetFilterActive && total > 0 && (
             <button

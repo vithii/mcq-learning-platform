@@ -6,6 +6,7 @@ import { ImportService } from '../services/importService';
 import { ExportService } from '../services/exportService';
 import { QuestionService } from '../services/questionService';
 import { execute, queryOne, queryAll } from '../db/database';
+import { seedDefaultQuestions } from '../db/seed';
 
 export const adminRouter = Router();
 
@@ -222,5 +223,48 @@ adminRouter.patch('/users/:id', async (req: Request, res: Response) => {
     res.json({ user: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message || 'Failed to update user' });
+  }
+});
+
+// 9. Reset all quiz sessions and user progress
+adminRouter.post('/reset-progress', async (req: Request, res: Response) => {
+  try {
+    await execute('DELETE FROM quiz_session_questions');
+    await execute('DELETE FROM quiz_sessions');
+    await execute('DELETE FROM answer_attempts');
+    await execute('DELETE FROM user_question_progress');
+    await execute('DELETE FROM user_daily_stats');
+    await execute('DELETE FROM user_achievements');
+    await execute('UPDATE users SET xp = 0, level = 1, current_streak = 0, longest_streak = 0');
+    res.json({ success: true, message: 'All quiz sessions, attempts, and progress have been reset.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to reset quiz progress' });
+  }
+});
+
+// 10. Empty Question Bank (wipe questions and topics)
+adminRouter.post('/empty-bank', async (req: Request, res: Response) => {
+  try {
+    await execute('DELETE FROM quiz_session_questions');
+    await execute('DELETE FROM quiz_sessions');
+    await execute('DELETE FROM answer_attempts');
+    await execute('DELETE FROM user_question_progress');
+    await execute('DELETE FROM question_options');
+    await execute('DELETE FROM questions');
+    await execute('DELETE FROM subtopics');
+    await execute('DELETE FROM topics');
+    res.json({ success: true, message: 'All questions and topics have been cleared.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to empty question bank' });
+  }
+});
+
+// 11. Restore default question bank
+adminRouter.post('/restore-defaults', async (req: Request, res: Response) => {
+  try {
+    await seedDefaultQuestions();
+    res.json({ success: true, message: 'Default question bank restored successfully.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to restore default questions' });
   }
 });
