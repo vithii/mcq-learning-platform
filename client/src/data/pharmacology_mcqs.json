@@ -1,0 +1,1714 @@
+[
+  {
+    "topics": [
+      {
+        "id": "prescription-and-dosage-calculations",
+        "name": "Prescription Principles and Dosage Calculations",
+        "description": "Essential metric conversions, solution concentration calculations, and prescription documentation rules.",
+        "subtopics": [
+          {
+            "id": "metric-conversions",
+            "name": "Metric Conversions and Solutions",
+            "description": "Mathematical relationships between milligrams, grams, micrograms, and percentage solutions.",
+            "questions": [
+              {
+                "id": "calc-met-001",
+                "question": "Based on the standard pharmacological dosage conversions provided in the lesson, how many grams are equal to 100 mg?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "0.01 g"
+                  },
+                  {
+                    "key": "B",
+                    "text": "0.1 g"
+                  },
+                  {
+                    "key": "C",
+                    "text": "1.0 g"
+                  },
+                  {
+                    "key": "D",
+                    "text": "0.001 g"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "According to the conversion guidelines in the lesson, 100 mg equals 0.1 g.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "calc-met-002",
+                "question": "A liquid medication has a concentration of 10 mg/ml. What is the corresponding percentage solution?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "0.1% solution"
+                  },
+                  {
+                    "key": "B",
+                    "text": "10% solution"
+                  },
+                  {
+                    "key": "C",
+                    "text": "1% solution"
+                  },
+                  {
+                    "key": "D",
+                    "text": "0.01% solution"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "The conversion reference explicitly indicates that 10 mg/ml corresponds to a 1% solution.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "calc-met-003",
+                "question": "According to the conversion reference table in the lesson, what is the value of 1 microgram (1 μg) expressed in grams?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "0.001 g"
+                  },
+                  {
+                    "key": "B",
+                    "text": "0.00001 g"
+                  },
+                  {
+                    "key": "C",
+                    "text": "0.01 g"
+                  },
+                  {
+                    "key": "D",
+                    "text": "0.0001 g"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "The lesson conversion table explicitly states that 1 μg is equivalent to 0.0001 g.",
+                "difficulty": "easy"
+              }
+            ]
+          },
+          {
+            "id": "prescription-regulations",
+            "name": "Prescription Blank Specifications",
+            "description": "Rules governing prescription blank notation, validity duration, and special card requirements.",
+            "questions": [
+              {
+                "id": "calc-reg-001",
+                "question": "Which of the following medications is specifically designated in the lesson with the notation 'Write on yellow card'?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Diazepam"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Amoxicillin / Clavulanic acid"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Metoprolol"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Omeprazole"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "In the lesson prescription notes, Diazepam is specifically annotated with 'Write on yellow card'.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "calc-reg-002",
+                "question": "On the medical documentation prescription form shown in the lesson, what is the validity duration when 30 days is crossed out?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "10 days"
+                  },
+                  {
+                    "key": "B",
+                    "text": "6 months"
+                  },
+                  {
+                    "key": "C",
+                    "text": "1 year"
+                  },
+                  {
+                    "key": "D",
+                    "text": "2 months"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "The prescription blank at the bottom specifies: 'This prescription is valid for: 30 days 2 months (cross out invalid)'.",
+                "difficulty": "medium"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "antimicrobial-and-antiparasitic-pharmacology",
+        "name": "Antimicrobial and Antiparasitic Pharmacology",
+        "description": "Mechanisms of action, clinical indications, adverse effects, and drug interactions of antibacterial, antiviral, antifungal, and anthelmintic agents.",
+        "subtopics": [
+          {
+            "id": "antibacterial-agents",
+            "name": "Antibacterial Drugs",
+            "description": "Bactericidal and bacteriostatic antibiotics including beta-lactams, cephalosporins, tetracyclines, fluoroquinolones, sulfonamides, and lincosamides.",
+            "questions": [
+              {
+                "id": "anti-bact-001",
+                "question": "What is the primary pharmacological role of clavulanate in the combination drug Amoxicillin / Clavulanic acid?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Clavulanate enhances amoxicillin absorption across the gastrointestinal mucosa"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Clavulanate directly inhibits bacterial protein synthesis at the 50S ribosomal subunit"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Clavulanate inhibits bacterial beta-lactamase to protect amoxicillin from enzymatic degradation"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Clavulanate blocks bacterial dihydrofolate reductase to arrest folic acid synthesis"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Amoxicillin inhibits bacterial cell wall synthesis while clavulanate inhibits bacterial beta-lactamase, preventing enzymatic degradation of amoxicillin.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "anti-bact-002",
+                "question": "By which mechanism does doxycycline exert its bacteriostatic action against susceptible microorganisms?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Inhibiting bacterial cell wall peptidoglycan cross-linking"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Binding to the 30S ribosomal subunit to inhibit bacterial protein synthesis"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Binding to the 50S ribosomal subunit to block peptide chain transpeptidation"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Reversibly inhibiting bacterial DNA gyrase to halt chromosomal replication"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Doxycycline inhibits bacterial protein synthesis by binding to the 30S ribosomal subunit, exerting bacteriostatic activity against gram-positive and gram-negative bacteria.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "anti-bact-003",
+                "question": "To avoid compromised absorption, patients taking doxycycline must avoid taking which substances within 2 hours before or after administration?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Oral contraceptives and low-dose aspirin"
+                  },
+                  {
+                    "key": "B",
+                    "text": "ACE inhibitors and statins"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Loop diuretics and insulin preparations"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Iron supplements, multivitamins, calcium supplements, and antacids"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "The lesson explicitly advises not to take iron supplements, multivitamins, calcium supplements, or antacids within 2 hours before or after taking doxycycline.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "anti-bact-004",
+                "question": "Which bacterial enzyme is directly inhibited by the third-generation respiratory fluoroquinolone levofloxacin?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "DNA gyrase"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Dihydrofolate reductase"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Beta-lactamase"
+                  },
+                  {
+                    "key": "D",
+                    "text": "H+/K+ ATPase"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Levofloxacin is a fluoroquinolone that inhibits the bacterial enzyme DNA gyrase, interfering with bacterial DNA replication and repair.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "anti-bact-005",
+                "question": "Concurrent administration of levofloxacin with which medication class increases the risk of tendon rupture, especially in elderly patients?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Antacids"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Oral contraceptives"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Corticosteroids"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Benzodiazepines"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Corticosteroids administered concurrently with levofloxacin may increase the risk of tendon rupture, particularly in elderly patients.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "anti-bact-006",
+                "question": "Which specific hypersensitivity is documented in the lesson as a contraindication to the administration of cefotaxime?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Hypersensitivity to milk proteins"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Hypersensitivity to corn or corn products"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Hypersensitivity to iodine-based formulations"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Hypersensitivity to adhesive bandaging"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "The lesson lists known corn hypersensitivity or hypersensitivity to corn products as a contraindication for cefotaxime.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "anti-bact-007",
+                "question": "How does co-trimoxazole achieve synergistic antibacterial activity against susceptible bacteria?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "It disrupts outer bacterial membranes and hydrolyzes peptidoglycan cross-links"
+                  },
+                  {
+                    "key": "B",
+                    "text": "It simultaneously binds to 30S and 50S ribosomal subunits to block translation"
+                  },
+                  {
+                    "key": "C",
+                    "text": "It inhibits both bacterial topoisomerase II and topoisomerase IV enzymes"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Trimethoprim inhibits dihydrofolate reductase, blocking two consecutive steps in nucleic acid and protein biosynthesis with sulfamethoxazole"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Trimethoprim reversibly inhibits dihydrofolate reductase; together with sulfamethoxazole, co-trimoxazole blocks two consecutive steps in the biosynthesis of nucleic acids and proteins.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "anti-bact-008",
+                "question": "Which serious gastrointestinal adverse effect develops rarely, but more frequently with lincomycin than with other antibiotics?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Pseudomembranous colitis"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Duodenal ulcer perforation"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Esophageal ulceration"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Paralytic ileus"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Under lincomycin side-effects, the lesson states that pseudomembranous colitis develops rarely, but more often than with other antibiotics.",
+                "difficulty": "medium"
+              }
+            ]
+          },
+          {
+            "id": "antiviral-agents",
+            "name": "Antiviral Therapeutics",
+            "description": "Mechanisms, clinical indications, and interactions of antiviral agents including acyclovir and oseltamivir.",
+            "questions": [
+              {
+                "id": "anti-vir-001",
+                "question": "What active intracellular metabolite does acyclovir convert into in order to become part of the viral DNA chain and interfere with viral replication?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Acyclovir monophosphate"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Acyclovir diphosphate"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Acyclovir triphosphate"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Acyclovir pyrophosphate"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Acyclovir is a synthetic nucleoside that converts to acyclovir triphosphate, which incorporates into the DNA chain and interferes with viral replication.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "anti-vir-002",
+                "question": "Which concurrent drug may increase the elimination half-life of acyclovir?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Aminoglycosides"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Probenecid"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Paracetamol"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Cimetidine"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "The lesson lists Probenecid under acyclovir interactions as an agent that may increase acyclovir half-life.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "anti-vir-003",
+                "question": "Which viral enzyme is selectively inhibited by oseltamivir to prevent the replication of influenza A and B viruses?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Neuraminidase"
+                  },
+                  {
+                    "key": "B",
+                    "text": "DNA polymerase"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Reverse transcriptase"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Thymidine kinase"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Oseltamivir is a selective inhibitor of influenza virus neuraminidase, an enzyme essential for viral replication in influenza A and B.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "anti-vir-004",
+                "question": "Why should oseltamivir not be administered at the same time as the intranasal influenza vaccine?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "The combination induces severe conjunctivitis and epistaxis"
+                  },
+                  {
+                    "key": "B",
+                    "text": "The vaccine drastically decreases oral absorption of oseltamivir"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Oseltamivir causes systemic hypersensitivity to the vaccine carrier protein"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Oseltamivir may interfere with the immune response to the live intranasal vaccine"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "The lesson notes that intranasal influenza vaccine should not be given at the same time because oseltamivir may interfere with the response to the vaccine.",
+                "difficulty": "hard"
+              }
+            ]
+          },
+          {
+            "id": "antifungal-and-anthelmintic-agents",
+            "name": "Antifungal and Anthelmintic Drugs",
+            "description": "Mechanisms, targets, and clinical utility of fluconazole and mebendazole.",
+            "questions": [
+              {
+                "id": "anti-fung-001",
+                "question": "What is the primary mechanism of action of fluconazole against susceptible fungi?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Binding to the 50S ribosomal subunit to arrest protein translation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Interfering with cytochrome P-450, an enzyme necessary for ergosterol formation"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Directly degrading cytoplasmic microtubules and blocking glucose uptake"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibiting squalene epoxidase to disrupt fungal wall synthesis"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Fluconazole interferes with cytochrome P-450, an enzyme necessary for fungal ergosterol formation, thereby directly damaging the fungal membrane.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "anti-fung-002",
+                "question": "By which cellular mechanism does mebendazole eliminate intestinal helminths and their larvae?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Hyperpolarizing parasite nerve membranes by opening glutamate-gated chloride channels"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Inhibiting parasite dihydrofolate reductase to arrest nucleic acid production"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Degrading parasite cytoplasmic microtubules and irreversibly blocking glucose uptake"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Paralyzing worm musculature through non-competitive nicotinic receptor blockade"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Mebendazole is a synthetic benzimidazole derivative that degrades parasite cytoplasmic microtubules and irreversibly blocks glucose uptake in helminths and larvae.",
+                "difficulty": "medium"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cardiovascular-and-hematologic-pharmacology",
+        "name": "Cardiovascular and Hematologic Pharmacology",
+        "description": "Therapeutics for hypertension, ischemic heart disease, cardiac arrhythmias, dyslipidemia, and thromboembolic disorders.",
+        "subtopics": [
+          {
+            "id": "antihypertensive-and-antianginal-agents",
+            "name": "Antihypertensive and Antianginal Drugs",
+            "description": "Calcium channel blockers, ACE inhibitors, angiotensin receptor blockers, beta-blockers, and organic nitrates.",
+            "questions": [
+              {
+                "id": "cvs-anti-001",
+                "question": "How does amlodipine lower systemic blood pressure and relieve angina symptoms?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Inhibiting calcium movement across cardiac and vascular smooth-muscle membranes, causing vasodilation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Selectively blocking beta-1 adrenergic receptors to decrease myocardial contractile force"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Directly inhibiting angiotensin-converting enzyme to reduce angiotensin II formation"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibiting sodium-chloride symporters in the distal convoluted tubule"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Amlodipine inhibits calcium movement across cardiac and vascular smooth-muscle cell membranes, dilating coronary and peripheral arteries to decrease peripheral resistance and blood pressure.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cvs-anti-002",
+                "question": "What is the primary hemodynamic mechanism through which enalapril lowers blood pressure?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Stimulating cardiac beta-2 receptors to promote coronary artery dilation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Blocking postsynaptic alpha-1 adrenergic receptors in peripheral arterioles"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Directly antagonizing L-type calcium channels on vascular smooth muscle"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibiting ACE to decrease angiotensin II levels, leading to less vasoconstriction"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Inhibition of ACE by enalapril decreases circulating levels of angiotensin II, leading to less vasoconstriction and lower blood pressure.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cvs-anti-003",
+                "question": "Losartan reduces peripheral vascular tone and aldosterone secretion by selectively blocking which receptor?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Beta-1 adrenergic receptor"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Muscarinic M2 receptor"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Angiotensin II (AT1) receptor"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Alpha-2 adrenergic receptor"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Losartan blocks the angiotensin II (AT1) receptor on specific tissue targets, decreasing vascular tone and aldosterone release.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cvs-anti-004",
+                "question": "Which receptor-blocking properties characterize the antihypertensive action of carvedilol?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Selective beta-1 adrenergic blockade without vascular effects"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Nonselective beta-blocking and alpha-adrenergic blocking activity"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Selective alpha-2 adrenergic agonism and central sympatholysis"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Selective muscarinic receptor blockade and potassium channel opening"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Carvedilol possesses nonselective beta-blocking and alpha-adrenergic blocking activity, causing vasodilation and reduced peripheral vascular resistance.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cvs-anti-005",
+                "question": "How does sublingually administered nitroglycerin acutely relieve angina pectoris?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Decreases myocardial oxygen demand, reduces left ventricle preload and afterload, and dilates coronary arteries"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Decreases heart rate by inhibiting calcium influx into pacemaker cells of the SA node"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Constricts systemic veins to shunt pooled venous blood into the pulmonary circulation"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Blocks beta-1 adrenergic receptors to suppress exercise-induced tachyarrhythmias"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Nitroglycerin decreases myocardial oxygen demand, reduces LV preload and afterload, dilates coronary arteries, and improves collateral blood flow to ischemic myocardium.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cvs-anti-006",
+                "question": "Concurrent administration of nitroglycerin with phosphodiesterase inhibitors like sildenafil or tadalafil is contraindicated because it produces:",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Severe hypertensive encephalopathy"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Acute paradoxical coronary artery spasm"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Profound hypotension"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Sudden atrioventricular conduction dissociation"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "The lesson explicitly warns that concurrent use of nitroglycerin with sildenafil, tadalafil, or avanafil produces hypotension.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cvs-anti-007",
+                "question": "What is the primary cellular mechanism of action of verapamil in the management of supraventricular tachycardia and angina?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Selective stimulation of cardiac muscarinic acetylcholine receptors"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Direct inhibition of cardiac sodium-potassium ATPase pumps"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Antagonism of presynaptic alpha-2 adrenergic autoreceptors"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Blockade of voltage-gated L-type calcium channels in vascular smooth muscle cells and cardiomyocytes"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Verapamil blocks voltage-gated L-type Ca++ channels in vascular smooth muscle cells and cardiomyocytes, inhibiting calcium entry into cardiac and vascular cells.",
+                "difficulty": "hard"
+              }
+            ]
+          },
+          {
+            "id": "anticoagulant-and-lipid-lowering-agents",
+            "name": "Anticoagulants, Statins, and Diuretics",
+            "description": "Heparins, HMG-CoA reductase inhibitors, and thiazide diuretics.",
+            "questions": [
+              {
+                "id": "cvs-lip-001",
+                "question": "What is the anticoagulant mechanism of dalteparin sodium?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Directly inhibits thrombin without requiring a plasma cofactor"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Potentiates the activity of antithrombin III (ATIII), inhibiting factor Xa and thrombin formation"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Inhibits hepatic vitamin K epoxide reductase to block prothrombin synthesis"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Irreversibly blocks platelet ADP receptors to inhibit aggregation"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Dalteparin potentiates the activity of ATIII, which inhibits the formation of both factor Xa and thrombin.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cvs-lip-002",
+                "question": "Dalteparin sodium is strictly contraindicated in patients with a history of which condition?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Heparin-induced thrombocytopenia (HIT) or HIT with thrombosis (HITT)"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Megaloblastic anemia due to folate deficiency"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Hypertrophic cardiomyopathy"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Primary hyperaldosteronism"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Dalteparin is contraindicated in patients with a history of heparin-induced thrombocytopenia (HIT) or heparin-induced thrombocytopenia with thrombosis (HITT).",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cvs-lip-003",
+                "question": "Which early enzymatic step in cholesterol biosynthesis is inhibited by atorvastatin?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Squalene monooxygenase"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Lipoprotein lipase"
+                  },
+                  {
+                    "key": "C",
+                    "text": "HMG-CoA reductase"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Thyroxine peroxidase"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Atorvastatin is an antihyperlipidemic agent that inhibits HMG-CoA reductase, the enzyme catalyzing the early rate-limiting step in cholesterol synthesis.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cvs-lip-004",
+                "question": "Co-administration of atorvastatin with nicotinic acid increases the risk of which serious musculoskeletal adverse reaction?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Osteoporosis"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Tendon rupture"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Osteomalacia"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Myopathy or rhabdomyolysis"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "The lesson specifically highlights that nicotinic acid increases the risk of myopathy or rhabdomyolysis when combined with atorvastatin.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cvs-lip-005",
+                "question": "In which anatomical segment of the renal tubule does hydrochlorothiazide inhibit sodium chloride transport?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Proximal convoluted tubule"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Distal convoluted tubule"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Thick ascending limb of Henle"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Medullary collecting duct"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Hydrochlorothiazide inhibits sodium chloride transport in the distal convoluted tubule, increasing urinary sodium and fluid excretion.",
+                "difficulty": "easy"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "respiratory-and-autonomic-pharmacology",
+        "name": "Respiratory and Autonomic Pharmacology",
+        "description": "Agents modulating bronchial airflow, respiratory secretions, cough reflex, and autonomic cholinergic/adrenergic receptors.",
+        "subtopics": [
+          {
+            "id": "bronchodilators-and-respiratory-drugs",
+            "name": "Bronchodilators and Mucolytics",
+            "description": "Mechanisms and indications of ambroxol, fenoterol, theophylline, and prenoxdiazine.",
+            "questions": [
+              {
+                "id": "resp-bron-001",
+                "question": "How does the mucolytic agent ambroxol alter sputum characteristics to facilitate airway clearance?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "It disrupts disulfide bonds in the sputum to make it more liquid and increases sputum volume"
+                  },
+                  {
+                    "key": "B",
+                    "text": "It disrupts disulfide bonds in the sputum to make it more liquid and increases sputum volume"
+                  },
+                  {
+                    "key": "C",
+                    "text": "It dries bronchial secretions through competitive muscarinic receptor blockade"
+                  },
+                  {
+                    "key": "D",
+                    "text": "It enhances leukocyte migration to digest mucus plugs enzymatically"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Ambroxol increases sputum volume and makes it less viscid by disrupting disulfide bonds, rendering the sputum more liquid.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "resp-bron-002",
+                "question": "What intracellular biochemical cascade is activated by fenoterol during an acute bronchospasm?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Inhibition of phosphodiesterase leading to intracellular cyclic GMP accumulation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Blockade of muscarinic M3 receptors resulting in protein kinase C inactivation"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Stimulation of beta-2 adrenergic receptors activating adenylate cyclase to convert ATP to cyclic AMP"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Direct opening of ligand-gated chloride channels in bronchial smooth muscle"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Fenoterol stimulates beta-2 receptors in the lungs, activating adenylate cyclase to convert ATP to cAMP, which causes bronchial smooth muscle relaxation and bronchodilation.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "resp-bron-003",
+                "question": "By what mechanism does prenoxdiazine eliminate unproductive cough?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Depression of the central cough center in the medulla oblongata"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Antagonism of histamine H1 receptors in the upper airway mucosa"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Inhibition of pulmonary leukotriene release from sensitized mast cells"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Peripheral local anesthesia of the respiratory tract mucosa, suppressing the cough reflex"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Prenoxdiazine is a peripherally acting antitussive that causes anesthesia of the respiratory tract mucosa, suppressing the cough reflex.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "resp-bron-004",
+                "question": "According to the lesson, which cellular mechanisms contribute to the bronchodilator actions of theophylline?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Alpha-1 adrenergic agonism and carbonic anhydrase activation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Inhibition of phosphodiesterase, blockade of adenosine receptors, and inhibition of mast cell mediator output"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Direct stimulation of muscarinic M2 receptors and activation of vagal efferents"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Opening of voltage-gated calcium channels and activation of cyclooxygenase"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Theophylline acts by inhibiting phosphodiesterase (raising cAMP), blocking adenosine receptors (stimulating catecholamine release), and inhibiting mediator release from mast cells.",
+                "difficulty": "hard"
+              }
+            ]
+          },
+          {
+            "id": "autonomic-receptor-modulators",
+            "name": "Autonomic Receptor Modulators",
+            "description": "Antimuscarinic agents and sympathomimetic decongestants.",
+            "questions": [
+              {
+                "id": "auto-mod-001",
+                "question": "What is the therapeutic mechanism of action of atropine in the management of iritis and iridocyclitis?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Relief of pain by blocking iris sphincter and ciliary muscle contractions, and dilation of the pupil to prevent adhesion formation"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Constriction of the pupil to pull the iris away from the trabecular meshwork"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Selective alpha-1 adrenergic vasoconstriction of iris microvessels"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Topical local anesthesia of corneal sensory nerve fibers"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Atropine relieves iritis pain by blocking contractions of the iris sphincter and ciliary muscles; pupillary dilation also prevents adhesions between the iris and lens.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "auto-mod-002",
+                "question": "Which ocular adverse effect of atropine accounts for its strict contraindication in patients with glaucoma?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Corneal neovascularization"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Lacrimal duct blockage"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Increase of ocular pressure"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Retinal pigment epithelium degeneration"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Atropine causes an increase in intraocular pressure, making it contraindicated in glaucoma.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "auto-mod-003",
+                "question": "How does naphazoline relieve ocular redness, and what is its maximum recommended duration of use?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Muscarinic blockade of ciliary vessels; use for up to 14 days"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Membrane-stabilizing action on mast cells; use continuously for 1 month"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Local anesthetic action on conjunctival nerves; single dose only"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Sympathomimetic vasoconstriction via alpha adrenergic receptors in conjunctival arterioles; use no longer than 5 days"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Naphazoline is a sympathomimetic that stimulates alpha-adrenergic receptors in conjunctival arterioles causing vasoconstriction; the prescription specifies use no longer than 5 days.",
+                "difficulty": "medium"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "neuropsychiatric-and-analgesic-pharmacology",
+        "name": "Neuropsychiatric and Analgesic Pharmacology",
+        "description": "Centrally acting agents including sedatives, antipsychotics, antidepressants, nootropics, NSAIDs, and opioid analgesics.",
+        "subtopics": [
+          {
+            "id": "central-nervous-system-agents",
+            "name": "Central Nervous System Therapeutics",
+            "description": "Benzodiazepines, antipsychotics, antidepressants, and metabolic nootropic agents.",
+            "questions": [
+              {
+                "id": "cns-ther-001",
+                "question": "What is the mechanism of action of diazepam in relieving anxiety, muscle spasms, and seizures?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Irreversible inhibition of monoamine oxidase in the central synaptic cleft"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Inhibition of excitatory synaptic transmission in CNS neurons due to blockade of neurotransmitter release or changes in nerve impulse frequency/amplitude"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Post-synaptic blockade of dopamine D2 receptors in the mesolimbic pathway"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Direct inhibition of acetylcholinesterase in cortical and hippocampal synapses"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "The lesson describes diazepam's MOA as inhibition of excitatory synaptic transmission in CNS neurons due to blockade of neurotransmitter release or changes of frequency and/or amplitude of nerve impulses.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cns-ther-002",
+                "question": "Why are severe hepatic deficiencies (such as hepatitis and liver cirrhosis) listed as contraindications for diazepam?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Hepatic failure converts diazepam into a potent hepatotoxic metabolite"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Hepatic disease induces severe narrow-angle glaucoma upon diazepam exposure"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Hepatitis and liver cirrhosis decrease diazepam elimination by a factor of two"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Diazepam directly blocks the synthesis of essential clotting factors in the liver"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Under contraindications, the lesson explicitly notes that hepatitis and liver cirrhosis decrease elimination of diazepam by a factor of two.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "cns-ther-003",
+                "question": "What is the primary mechanism of action of the antidepressant maprotiline?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Tetracyclic antagonist at presynaptic alpha-2 adrenergic receptors, increasing norepinephrine and serotonin neurotransmission"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Selective serotonin reuptake inhibitor with potent anticholinergic activity"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Non-competitive inhibitor of central monoamine oxidase enzymes A and B"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Selective dopamine D2 receptor agonist in the mesocortical tract"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Maprotiline is a tetracyclic compound that acts as an antagonist at presynaptic alpha-2 adrenergic receptors, increasing both norepinephrine and serotonin neurotransmission, with low anticholinergic activity.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "cns-ther-004",
+                "question": "Which metabolic enhancements and neurotransmitter effects are produced in the brain by piracetam?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Suppression of cortical glycolysis and blockade of acetylcholine release"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Inhibition of neuronal ATP synthesis and blockade of postsynaptic GABA receptors"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Opening of neuronal sodium channels to hyperpolarize cortical pyramidal neurons"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Activation of glycolysis, increased synthesis of ATP, and increased action of acetylcholine in the CNS"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Piracetam improves brain metabolic processes by activating glycolysis, increasing ATP synthesis, and increasing the action of acetylcholine in the CNS.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cns-ther-005",
+                "question": "According to the lesson notes regarding typical first-generation antipsychotics, how is their therapeutic antipsychotic effect produced?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Agonism of presynaptic alpha-2 adrenergic autoreceptors"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Post-synaptic blockade at D2 receptors in the mesolimbic pathway"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Selective inhibition of histamine H1 receptors in the basal ganglia"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Blockade of NMDA glutamate receptors in the cerebral cortex"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "The text states that first-generation antipsychotics produce their antipsychotic effect via post-synaptic blockade at D2 receptors in the mesolimbic pathway.",
+                "difficulty": "medium"
+              }
+            ]
+          },
+          {
+            "id": "analgesics-and-anti-inflammatory-agents",
+            "name": "Analgesics and NSAIDs",
+            "description": "Opioid receptor agonists and cyclooxygenase-inhibiting anti-inflammatory analgesics.",
+            "questions": [
+              {
+                "id": "cns-anal-001",
+                "question": "How is tramadol classified pharmacologically in the management of moderate and neuropathic pain?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Potent kappa-opioid agonist and calcium channel blocker"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Selective cyclooxygenase-2 inhibitor without central opioid activity"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Opioid analgesic acting as a weak agonist of mu receptors"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Pure opioid receptor antagonist used for reversal of sedation"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Tramadol is classified as an opioid analgesic that functions as a weak agonist of mu receptors.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cns-anal-002",
+                "question": "Which serious neurological adverse effect is specifically associated with tramadol administration and withdrawal?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Increased risk of convulsions due to a decrease in the convulsion threshold"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Rapid development of choreiform dyskinesias"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Severe ascending Guillain-Barré paralysis"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Acute loss of deep tendon reflexes and bilateral mydriasis"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Tramadol lowers the convulsion threshold, increasing the risk of convulsions; its withdrawal symptoms are also accompanied by convulsions.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "cns-anal-003",
+                "question": "By what mechanism does diclofenac reduce inflammation and alleviate arthritic pain?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Direct inhibition of leukotriene synthesis from lipoxygenase"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Stabilization of mast cell granules and suppression of histamine release"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Blockade of substance P receptors on peripheral C-fibers"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibition of COX, which is responsible for the synthesis of prostaglandins from arachidonic acid"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Diclofenac's mechanism of action is the inhibition of cyclooxygenase (COX), which synthesizes inflammatory prostaglandins from arachidonic acid.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "cns-anal-004",
+                "question": "Which of the following conditions is an absolute contraindication to the administration of ketorolac?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Allergic conjunctivitis"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Active peptic ulcer disease, GI bleeding, or ulceration"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Postoperative refractive surgery recovery"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Controlled primary hypertension"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Ketorolac is contraindicated in patients with active peptic ulcer disease, chronic GI tract inflammation, and gastrointestinal bleeding or ulceration.",
+                "difficulty": "easy"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gastrointestinal-and-endocrine-pharmacology",
+        "name": "Gastrointestinal and Endocrine Pharmacology",
+        "description": "Therapeutic agents for acid-peptic disorders, GI motility, pancreatic insufficiency, diabetes mellitus, thyroid diseases, and corticosteroid therapy.",
+        "subtopics": [
+          {
+            "id": "gastrointestinal-agents",
+            "name": "Gastrointestinal Therapeutics",
+            "description": "Proton pump inhibitors, H2 receptor blockers, gastroprotectors, contact laxatives, prokinetics, and digestive enzymes.",
+            "questions": [
+              {
+                "id": "gi-endo-001",
+                "question": "How does omeprazole inhibit gastric acid secretion for more than 24 hours despite having a short plasma half-life?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "It irreversibly down-regulates parietal cell gastrin receptors"
+                  },
+                  {
+                    "key": "B",
+                    "text": "It competitively blocks histamine H2 receptors on parietal basolateral membranes"
+                  },
+                  {
+                    "key": "C",
+                    "text": "It accumulates in acidified canaliculi and forms an irreversible disulfide bond with cysteine residues of H+/K+ ATPase"
+                  },
+                  {
+                    "key": "D",
+                    "text": "It polymerizes into an insoluble acid-resistant barrier adhering to ulcer craters"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Omeprazole prodrug molecules accumulate in the acidified parietal cell canaliculi and form an irreversible disulfide bond with cysteine residues of the H+/K+ ATPase pump, permanently blocking acid secretion until new pumps are synthesized.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "gi-endo-002",
+                "question": "What is the primary pharmacological action of the H2 blocker famotidine?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Decreases gastric acid production, suppresses acid concentration and pepsin content, and reduces secretion volume"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Irreversibly inhibits the parietal cell H+/K+ ATP pump, the final step of acid secretion"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Chemically neutralizes existing gastric hydrochloric acid upon contact"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Stimulates local bicarbonate and mucus synthesis via mucosal prostaglandin agonism"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Famotidine decreases the production of gastric acid, suppresses acid concentration and pepsin content, and decreases the volume of gastric secretion.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "gi-endo-003",
+                "question": "Which statement accurately describes the mechanism of action of bismuth subcitrate?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "It exerts strong acid-neutralizing activity and completely suppresses acid secretion"
+                  },
+                  {
+                    "key": "B",
+                    "text": "It acts as an irreversible antagonist of parietal cell H+/K+ ATPase"
+                  },
+                  {
+                    "key": "C",
+                    "text": "It selectively binds to and blocks gastrin G receptors on ECL cells"
+                  },
+                  {
+                    "key": "D",
+                    "text": "It has little acid-neutralizing effect and does not affect acid secretion, but inhibits peptic activity"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Bismuth subcitrate has little acid-neutralizing effect and does not affect acid secretion, but it does inhibit peptic activity.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "gi-endo-004",
+                "question": "Where and how does the stimulant contact laxative bisacodyl primarily exert its action?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "In the small intestine by delaying osmotic fluid absorption"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Mainly on the colon by stimulating enteric neurons to cause peristalsis and increasing fluid and salt secretion"
+                  },
+                  {
+                    "key": "C",
+                    "text": "In the stomach by accelerating gastric emptying through vagal stimulation"
+                  },
+                  {
+                    "key": "D",
+                    "text": "In the biliary tract by stimulating bile salt secretion into the duodenum"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Bisacodyl stimulates enteric neurons to cause colonic peristalsis and increases fluid/salt secretion; its action on the small intestine is negligible.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "gi-endo-005",
+                "question": "What dual receptor actions mediate the prokinetic gastrointestinal motility effects of metoclopramide?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "H1 receptor antagonism and D2 receptor agonism"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Alpha-1 adrenergic agonism and beta-2 adrenergic blockade"
+                  },
+                  {
+                    "key": "C",
+                    "text": "D2 receptor antagonism and 5-HT4 receptor agonism"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Muscarinic M1 blockade and 5-HT3 receptor agonism"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Metoclopramide acts via D2 antagonism (blocking dopamine to hasten gastric emptying and enhance LES tone via ACh release) and 5-HT4 agonism (enhancing ACh release from mesenteric motor neurons).",
+                "difficulty": "hard"
+              },
+              {
+                "id": "gi-endo-006",
+                "question": "Pancreatin is clinically indicated for malabsorption in chronic pancreatitis because it provides a mixture of which enzymes?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Amylase, lipase, and proteases"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Pepsin, renin, and gastrin"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Lactase, maltase, and sucrase"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Enterokinase, trypsinogen, and carboxypeptidase"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Pancreatin contains mixtures of amylase, lipase, and proteases used to treat malabsorption syndrome due to pancreatic disorders.",
+                "difficulty": "easy"
+              }
+            ]
+          },
+          {
+            "id": "endocrine-and-metabolic-agents",
+            "name": "Endocrine and Metabolic Agents",
+            "description": "Antidiabetic drugs, thyroid modulators, anabolic steroids, mineral supplements, and corticosteroids.",
+            "questions": [
+              {
+                "id": "endo-met-001",
+                "question": "How does the sulfonylurea glibenclamide stimulate endogenous insulin secretion from pancreatic beta cells?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Stimulating glucagon-like peptide-1 (GLP-1) receptors"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Inhibiting dipeptidyl peptidase-4 (DPP-4) enzymes"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Opening ATP-sensitive K+ channels to hyperpolarize beta-cell membranes"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibition of ATP-sensitive K+ channels, leading to cell depolarization and insulin secretion"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Glibenclamide acts by inhibiting ATP-sensitive K+ channels in pancreatic beta cells, which causes cell depolarization and insulin secretion.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "endo-met-002",
+                "question": "What is the primary antihyperglycemic mechanism of action of metformin in type 2 diabetes?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Direct stimulation of insulin exocytosis from pancreatic islets"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Decreasing hepatic production of glucose (inhibition of hepatic gluconeogenesis) and improving insulin sensitivity"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Inhibition of renal sodium-glucose cotransporter 2 (SGLT2)"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Enzymatic destruction of complex dietary carbohydrates in the duodenum"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "Metformin decreases hepatic production of glucose (inhibiting hepatic gluconeogenesis), decreases glucose absorption, and improves insulin sensitivity.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "endo-met-003",
+                "question": "Besides facilitating glucose uptake into skeletal/cardiac muscle and adipose tissue, insulin facilitates cellular transport of which electrolytes?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Sodium and chloride"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Calcium and phosphate"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Potassium and magnesium"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Zinc and bicarbonate"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "The lesson states that insulin facilitates the passage of glucose, potassium, and magnesium across the cellular membrane of skeletal and cardiac muscle and adipose tissue.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "endo-met-004",
+                "question": "What is levothyroxine sodium, and what metabolic effect does it produce in the body?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Synthetic isomer of thyroxine (T4) that increases basal metabolic rate and is involved in normal growth and development"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Antithyroid agent that destroys follicular cells and slows basal metabolism"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Rapid-acting T3 preparation used exclusively for emergency thyroid storm"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Selective agonist of pituitary TSH receptors that stimulates thyroid hypertrophy"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Levothyroxine sodium is a synthetic isomer of thyroxine (T4) involved in normal metabolism, growth, and development, which increases the basal metabolic rate.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "endo-met-005",
+                "question": "By what mechanism does thiamazol treat hyperthyroidism and Graves' disease?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Destroying hyperfunctioning thyroid follicles via beta emissions"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Competitively blocking TSH receptors on thyroid epithelial cells"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Accelerating peripheral catabolism and biliary excretion of T3 and T4"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Inhibiting thyroxine peroxidase and blocking the synthesis of thyroid hormones"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Thiamazol acts by inhibiting thyroxine peroxidase, thereby blocking the synthesis of thyroid hormones.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "endo-met-006",
+                "question": "Which severe adverse hematological condition occurs in 0.1% to 0.5% of patients treated with thiamazol?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Polycythemia vera"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Agranulocytosis"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Autoimmune hemolytic anemia"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Essential thrombocythemia"
+                  }
+                ],
+                "correct_answer": "B",
+                "explanation": "The lesson notes that thiamazol causes agranulocytosis in 0.1–0.5% of patients.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "endo-met-007",
+                "question": "How does the anabolic steroid nandrolone produce its pharmacological effect?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Stimulates anterior pituitary release of luteinizing hormone and FSH"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Blocks peripheral aromatase to prevent conversion of androgens to estrogens"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Binds to androgen receptor complex, enters nucleus, and binds directly to specific chromosomal DNA sequences"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Directly inhibits renal erythropoietin production to conserve iron stores"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Nandrolone binds to the androgen receptor complex, allowing it to enter the nucleus and bind directly to specific nucleotide sequences of chromosomal DNA to produce androgenic and anabolic effects.",
+                "difficulty": "medium"
+              },
+              {
+                "id": "endo-met-008",
+                "question": "How does systemic prednisolone suppress inflammation and tissue responses in severe bronchial asthma?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Inhibits accumulation of inflammatory cells at sites, phagocytosis, lysosomal enzyme release/synthesis, and inflammatory mediator release"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Directly activates airway adenylate cyclase to elevate intracellular cAMP"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Competitively antagonizes leukotriene C4 receptors on airway smooth muscle"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Selectively inhibits cyclooxygenase-2 without suppressing cell-mediated immunity"
+                  }
+                ],
+                "correct_answer": "A",
+                "explanation": "Prednisolone inhibits accumulation of inflammatory cells at inflammation sites, phagocytosis, lysosomal enzyme release/synthesis, and release of inflammatory mediators, while suppressing cell-mediated immune reactions.",
+                "difficulty": "hard"
+              },
+              {
+                "id": "endo-met-009",
+                "question": "Which specific condition is listed in the lesson as a contraindication to the administration of fluticasone?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Seasonal allergic rhinitis"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Steroid responsive dermatological pruritus"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Mild chronic stable angina"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Severe allergy to milk proteins"
+                  }
+                ],
+                "correct_answer": "D",
+                "explanation": "Fluticasone lists severe allergy to milk proteins, untreated localized infection of nasal mucosa, and formulation hypersensitivity as contraindications.",
+                "difficulty": "easy"
+              },
+              {
+                "id": "endo-met-010",
+                "question": "What is the biological mechanism of action of ferrous sulfate when administered for anemia?",
+                "options": [
+                  {
+                    "key": "A",
+                    "text": "Stimulates renal secretion of erythropoietin via tissue hypoxia pathways"
+                  },
+                  {
+                    "key": "B",
+                    "text": "Acts as a biological cofactor for dihydrofolate reductase in thymidylate synthesis"
+                  },
+                  {
+                    "key": "C",
+                    "text": "Combines with porphyrin and globin chains to form hemoglobin, critical for tissue oxygen delivery"
+                  },
+                  {
+                    "key": "D",
+                    "text": "Promotes intrinsic factor secretion in the stomach to boost cyanocobalamin absorption"
+                  }
+                ],
+                "correct_answer": "C",
+                "explanation": "Iron from ferrous sulfate combines with porphyrin and globin chains to form hemoglobin, which is critical for oxygen delivery from the lungs to other tissues.",
+                "difficulty": "easy"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
