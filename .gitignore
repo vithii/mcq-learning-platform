@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+mcq_platform.db*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
