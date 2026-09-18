@@ -253,6 +253,7 @@ adminRouter.post('/empty-bank', async (req: Request, res: Response) => {
     await execute('DELETE FROM questions');
     await execute('DELETE FROM subtopics');
     await execute('DELETE FROM topics');
+    await execute(`INSERT OR REPLACE INTO system_settings (key, value) VALUES ('initial_questions_seeded', '1')`).catch(() => {});
     res.json({ success: true, message: 'All questions and topics have been cleared.' });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to empty question bank' });
@@ -262,7 +263,7 @@ adminRouter.post('/empty-bank', async (req: Request, res: Response) => {
 // 11. Restore default question bank
 adminRouter.post('/restore-defaults', async (req: Request, res: Response) => {
   try {
-    await seedDefaultQuestions();
+    await seedDefaultQuestions(true);
     res.json({ success: true, message: 'Default question bank restored successfully.' });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to restore default questions' });

@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { SyncModal } from './SyncModal';
 import {
   LayoutDashboard,
   Compass,
@@ -16,14 +15,12 @@ import {
   LogOut,
   Sparkles,
   Zap,
-  PlayCircle,
-  Radio
+  PlayCircle
 } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -102,32 +99,6 @@ export const Navigation: React.FC = () => {
           )}
 
           <div className="nav-divider" />
-          <button
-            type="button"
-            onClick={() => setShowSyncModal(true)}
-            className="nav-link"
-            style={{
-              background: 'none',
-              border: 'none',
-              width: '100%',
-              cursor: 'pointer',
-              textAlign: 'left',
-              color: 'var(--text-normal)'
-            }}
-            title="Device & Multi-Tab Sync"
-          >
-            <Radio size={18} style={{ color: 'var(--success)' }} />
-            <span style={{ flex: 1 }}>Sync & Devices</span>
-            <span style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background: 'var(--success)',
-              boxShadow: '0 0 6px var(--success)',
-              display: 'inline-block'
-            }} />
-          </button>
-
           <NavLink to="/settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <Settings size={18} />
             <span>Settings</span>
@@ -170,22 +141,11 @@ export const Navigation: React.FC = () => {
           <RotateCcw size={20} />
           <span>Mistakes</span>
         </NavLink>
-        <button
-          type="button"
-          onClick={() => setShowSyncModal(true)}
-          className="mobile-nav-item"
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          <Radio size={20} style={{ color: 'var(--success)' }} />
-          <span>Sync</span>
-        </button>
         <NavLink to="/settings" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
           <Settings size={20} />
           <span>Profile</span>
         </NavLink>
       </nav>
-
-      <SyncModal isOpen={showSyncModal} onClose={() => setShowSyncModal(false)} />
     </>
   );
 };

@@ -132,10 +132,27 @@ export async function seedDefaultUsers() {
   }
 }
 
-export async function seedDefaultQuestions() {
+export async function seedDefaultQuestions(force = false) {
   try {
+    await execute(`CREATE TABLE IF NOT EXISTS system_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`).catch(() => {});
+
+    if (!force) {
+      const alreadySeeded = await queryOne<{ value: string }>(
+        'SELECT value FROM system_settings WHERE key = ?',
+        ['initial_questions_seeded']
+      );
+      if (alreadySeeded && alreadySeeded.value === '1') {
+        return;
+      }
+    }
+
     const countRow = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM questions');
     if (countRow && countRow.count > 0) {
+      await execute(`INSERT OR REPLACE INTO system_settings (key, value) VALUES ('initial_questions_seeded', '1')`);
       return;
     }
 
@@ -196,6 +213,8 @@ export async function seedDefaultQuestions() {
         console.log(`Auto-seeded ${pharmPreview.validatedRecords.length} questions from ${path.basename(pharmPath)}`);
       }
     }
+
+    await execute(`INSERT OR REPLACE INTO system_settings (key, value) VALUES ('initial_questions_seeded', '1')`);
   } catch (err) {
     console.error('Failed to auto-seed default questions:', err);
   }
