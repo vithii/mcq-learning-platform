@@ -570,6 +570,13 @@ export class ClientStorageService {
     return { success: true };
   }
 
+  static async bulkDeleteTopics(ids: string[]) {
+    for (const id of ids) {
+      await this.deleteTopic(id);
+    }
+    return { count: ids.length };
+  }
+
   static async createSubtopic(topicId: string, data: any) {
     const subtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
     const newSub: StoredSubtopic = {

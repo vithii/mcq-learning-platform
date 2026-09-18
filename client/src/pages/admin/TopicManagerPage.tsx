@@ -4,12 +4,16 @@ import { useToast } from '../../context/ToastContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { Modal } from '../../components/Modal';
 import { useCrossTabSync } from '../../services/syncService';
-import { FolderTree, Plus, Edit2, Trash2, Layers, AlertTriangle } from 'lucide-react';
+import { FolderTree, Plus, Edit2, Trash2, Layers, AlertTriangle, CheckSquare, Square } from 'lucide-react';
 
 export const TopicManagerPage: React.FC = () => {
   const { addToast } = useToast();
   const [topics, setTopics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Multi-selection state for Bulk Delete / Select All
+  const [selectedTopicIds, setSelectedTopicIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   // New Topic Modal
   const [topicModalOpen, setTopicModalOpen] = useState(false);
@@ -97,9 +101,47 @@ export const TopicManagerPage: React.FC = () => {
     try {
       await ApiClient.emptyQuestionBank();
       addToast({ type: 'success', message: 'All topics and questions have been completely removed.' });
+      setSelectedTopicIds(new Set());
       fetchTopics();
     } catch (err: any) {
       addToast({ type: 'error', message: err.message || 'Failed to delete all topics' });
+    }
+  };
+
+  const isAllSelected = topics.length > 0 && topics.every(t => selectedTopicIds.has(t.id));
+
+  const handleToggleTopicSelect = (id: string) => {
+    setSelectedTopicIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedTopicIds(new Set());
+    } else {
+      setSelectedTopicIds(new Set(topics.map(t => t.id)));
+    }
+  };
+
+  const handleBulkDeleteSelected = async () => {
+    if (selectedTopicIds.size === 0) return;
+    const count = selectedTopicIds.size;
+    if (!window.confirm(`Are you sure you want to permanently delete ${count} selected topic(s) and all their subtopics and questions?`)) return;
+
+    setDeleting(true);
+    try {
+      await ApiClient.bulkDeleteTopics(Array.from(selectedTopicIds));
+      addToast({ type: 'success', message: `Successfully deleted ${count} topic(s)` });
+      setSelectedTopicIds(new Set());
+      fetchTopics();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to delete selected topics' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -181,38 +223,141 @@ export const TopicManagerPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {topics.map(t => (
-          <div key={t.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-              <div>
-                <h2 style={{ fontSize: '1.35rem', marginBottom: '0.25rem' }}>{t.name}</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.description || 'No description'}</p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setParentTopicId(t.id);
-                    setSubtopicModalOpen(true);
-                  }}
-                  className="btn btn-secondary btn-sm"
-                >
-                  <Plus size={14} />
-                  <span>Add Subtopic</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteTopic(t.id, t.name)}
-                  className="btn-ghost"
-                  style={{ color: 'var(--danger)', padding: '6px' }}
-                  title="Delete Topic"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+        <>
+          {/* Select All & Bulk Action Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <button
+                type="button"
+                onClick={handleToggleSelectAll}
+                className="btn-ghost"
+                style={{
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: isAllSelected ? 'var(--primary-light)' : 'var(--text-muted)',
+                  cursor: 'pointer'
+                }}
+                title={isAllSelected ? 'Deselect all' : 'Select all'}
+              >
+                {isAllSelected ? (
+                  <CheckSquare size={20} style={{ color: 'var(--primary-light)' }} />
+                ) : (
+                  <Square size={20} />
+                )}
+              </button>
+              <span
+                onClick={handleToggleSelectAll}
+                style={{ fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', userSelect: 'none' }}
+              >
+                Select All Topics ({topics.length})
+              </span>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {selectedTopicIds.size > 0 ? (
+                <>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>
+                    <strong>{selectedTopicIds.size}</strong> of {topics.length} selected
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleBulkDeleteSelected}
+                    disabled={deleting}
+                    className="btn btn-danger btn-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Trash2 size={16} />
+                    <span>{deleting ? 'Deleting...' : `Delete Selected (${selectedTopicIds.size})`}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTopicIds(new Set())}
+                    className="btn btn-ghost btn-sm"
+                    style={{ fontSize: '0.8rem' }}
+                  >
+                    Deselect
+                  </button>
+                </>
+              ) : (
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+                  Check topics to select or click Select All
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {topics.map(t => (
+            <div
+              key={t.id}
+              className="card"
+              style={{
+                border: selectedTopicIds.has(t.id) ? '1px solid var(--primary)' : '1px solid var(--border)',
+                background: selectedTopicIds.has(t.id) ? 'rgba(99, 102, 241, 0.04)' : undefined,
+                transition: 'border 0.15s ease, background 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleTopicSelect(t.id)}
+                    className="btn-ghost"
+                    style={{
+                      padding: '4px',
+                      marginTop: '2px',
+                      color: selectedTopicIds.has(t.id) ? 'var(--primary-light)' : 'var(--text-muted)',
+                      cursor: 'pointer'
+                    }}
+                    title={selectedTopicIds.has(t.id) ? 'Deselect topic' : 'Select topic'}
+                  >
+                    {selectedTopicIds.has(t.id) ? (
+                      <CheckSquare size={20} style={{ color: 'var(--primary-light)' }} />
+                    ) : (
+                      <Square size={20} />
+                    )}
+                  </button>
+                  <div>
+                    <h2 style={{ fontSize: '1.35rem', marginBottom: '0.25rem' }}>{t.name}</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.description || 'No description'}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setParentTopicId(t.id);
+                      setSubtopicModalOpen(true);
+                    }}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    <Plus size={14} />
+                    <span>Add Subtopic</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTopic(t.id, t.name)}
+                    className="btn-ghost"
+                    style={{ color: 'var(--danger)', padding: '6px' }}
+                    title="Delete Topic"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
 
             {/* Subtopics */}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
@@ -254,6 +399,7 @@ export const TopicManagerPage: React.FC = () => {
           </div>
         ))}
         </div>
+        </>
       )}
 
       {/* New Topic Modal */}

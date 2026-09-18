@@ -287,6 +287,16 @@ export class ApiClient {
     );
   }
 
+  static async bulkDeleteTopics(ids: string[]) {
+    return this.executeWithFallback(
+      () => this.request('/topics/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids })
+      }),
+      () => ClientStorageService.bulkDeleteTopics(ids)
+    );
+  }
+
   // Questions
   static async getQuestions(params: Record<string, any> = {}) {
     return this.executeWithFallback(

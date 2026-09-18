@@ -198,6 +198,27 @@ topicRouter.delete('/:topicId/subtopics/:subtopicId', requireAuth, requireAdmin,
   }
 });
 
+// Bulk delete topics (Admin)
+topicRouter.post('/bulk-delete', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'ids array required' });
+    }
+    for (const id of ids) {
+      await execute('DELETE FROM quiz_questions WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+      await execute('DELETE FROM user_question_progress WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+      await execute('DELETE FROM question_options WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+      await execute('DELETE FROM questions WHERE topic_id = ?', [id]);
+      await execute('DELETE FROM subtopics WHERE topic_id = ?', [id]);
+      await execute('DELETE FROM topics WHERE id = ?', [id]);
+    }
+    res.json({ success: true, count: ids.length });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to bulk delete topics' });
+  }
+});
+
 // Create subtopic (Admin)
 topicRouter.post('/:topicId/subtopics', requireAuth, requireAdmin, validateBody(subtopicSchema), async (req: Request, res: Response) => {
   try {
