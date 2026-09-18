@@ -5,6 +5,7 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { EmptyState } from '../components/EmptyState';
 import { useToast } from '../context/ToastContext';
 import { Bookmark, Play, Trash2 } from 'lucide-react';
+import { useCrossTabSync } from '../services/syncService';
 
 export const BookmarksPage: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
@@ -25,6 +26,10 @@ export const BookmarksPage: React.FC = () => {
   useEffect(() => {
     fetchBookmarks();
   }, []);
+
+  useCrossTabSync(['bookmarks', 'questions', 'all'], () => {
+    fetchBookmarks();
+  });
 
   const handleRemoveBookmark = async (questionId: string) => {
     try {

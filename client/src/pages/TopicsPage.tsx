@@ -3,17 +3,26 @@ import { Link } from 'react-router-dom';
 import { ApiClient } from '../services/api';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Compass, BookOpen, ChevronRight, Play } from 'lucide-react';
+import { useCrossTabSync } from '../services/syncService';
 
 export const TopicsPage: React.FC = () => {
   const [topics, setTopics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchTopics = () => {
     ApiClient.getTopics()
       .then(res => setTopics(res?.topics || (Array.isArray(res) ? res : [])))
       .catch(err => console.error('Failed to load topics:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchTopics();
   }, []);
+
+  useCrossTabSync(['topics', 'questions', 'all'], () => {
+    fetchTopics();
+  });
 
   if (loading) {
     return (

@@ -158,16 +158,43 @@ topicRouter.patch('/:id', requireAuth, requireAdmin, async (req: Request, res: R
   }
 });
 
-// Delete topic (Admin)
+// Delete topic (Admin) - Cascade deletes all dependent subtopics and questions
 topicRouter.delete('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const existing = await queryOne('SELECT id FROM topics WHERE id = ?', [req.params.id]);
     if (!existing) return res.status(404).json({ error: 'Topic not found' });
 
-    await execute('DELETE FROM topics WHERE id = ?', [req.params.id]);
+    const id = req.params.id;
+    // Explicitly delete child questions & progress to avoid foreign key blocks
+    await execute('DELETE FROM quiz_questions WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+    await execute('DELETE FROM user_question_progress WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+    await execute('DELETE FROM question_options WHERE question_id IN (SELECT id FROM questions WHERE topic_id = ?)', [id]);
+    await execute('DELETE FROM questions WHERE topic_id = ?', [id]);
+    await execute('DELETE FROM subtopics WHERE topic_id = ?', [id]);
+    await execute('DELETE FROM topics WHERE id = ?', [id]);
+
     res.json({ success: true, message: 'Topic and associated subtopics/questions deleted' });
   } catch (err: any) {
     res.status(400).json({ error: err.message || 'Failed to delete topic' });
+  }
+});
+
+// Delete subtopic (Admin) - Cascade deletes subtopic questions
+topicRouter.delete('/:topicId/subtopics/:subtopicId', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { subtopicId } = req.params;
+    const existing = await queryOne('SELECT id FROM subtopics WHERE id = ?', [subtopicId]);
+    if (!existing) return res.status(404).json({ error: 'Subtopic not found' });
+
+    await execute('DELETE FROM quiz_questions WHERE question_id IN (SELECT id FROM questions WHERE subtopic_id = ?)', [subtopicId]);
+    await execute('DELETE FROM user_question_progress WHERE question_id IN (SELECT id FROM questions WHERE subtopic_id = ?)', [subtopicId]);
+    await execute('DELETE FROM question_options WHERE question_id IN (SELECT id FROM questions WHERE subtopic_id = ?)', [subtopicId]);
+    await execute('DELETE FROM questions WHERE subtopic_id = ?', [subtopicId]);
+    await execute('DELETE FROM subtopics WHERE id = ?', [subtopicId]);
+
+    res.json({ success: true, message: 'Subtopic and associated questions deleted' });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to delete subtopic' });
   }
 });
 

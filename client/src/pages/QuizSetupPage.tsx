@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiClient } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useCrossTabSync } from '../services/syncService';
 import {
   Play,
   RotateCcw,
@@ -32,11 +33,19 @@ export const QuizSetupPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(false);
 
-  useEffect(() => {
+  const loadTopics = () => {
     ApiClient.getTopics()
       .then(res => setTopics(res?.topics || (Array.isArray(res) ? res : [])))
       .catch(err => console.error('Failed to load topics:', err));
+  };
+
+  useEffect(() => {
+    loadTopics();
   }, []);
+
+  useCrossTabSync(['topics', 'questions', 'all'], () => {
+    loadTopics();
+  });
 
   const selectedTopic = topics.find(t => t.id === topicId);
   const availableSubtopics = selectedTopic?.subtopics || [];

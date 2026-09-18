@@ -3,7 +3,8 @@ import { ApiClient } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { Modal } from '../../components/Modal';
-import { FolderTree, Plus, Edit2, Trash2, Layers } from 'lucide-react';
+import { useCrossTabSync } from '../../services/syncService';
+import { FolderTree, Plus, Edit2, Trash2, Layers, AlertTriangle } from 'lucide-react';
 
 export const TopicManagerPage: React.FC = () => {
   const { addToast } = useToast();
@@ -36,6 +37,10 @@ export const TopicManagerPage: React.FC = () => {
   useEffect(() => {
     fetchTopics();
   }, []);
+
+  useCrossTabSync(['topics', 'questions', 'all'], () => {
+    fetchTopics();
+  });
 
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +81,28 @@ export const TopicManagerPage: React.FC = () => {
     }
   };
 
+  const handleDeleteSubtopic = async (topicId: string, subtopicId: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete subtopic "${name}" and all its questions?`)) return;
+    try {
+      await ApiClient.deleteSubtopic(topicId, subtopicId);
+      addToast({ type: 'success', message: 'Subtopic deleted' });
+      fetchTopics();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to delete subtopic' });
+    }
+  };
+
+  const handleEmptyAllTopics = async () => {
+    if (!window.confirm('Are you sure you want to completely delete ALL topics, subtopics, and questions? This will wipe the topic organizer.')) return;
+    try {
+      await ApiClient.emptyQuestionBank();
+      addToast({ type: 'success', message: 'All topics and questions have been completely removed.' });
+      fetchTopics();
+    } catch (err: any) {
+      addToast({ type: 'error', message: err.message || 'Failed to delete all topics' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-container">
@@ -97,14 +124,27 @@ export const TopicManagerPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setTopicModalOpen(true)}
-          className="btn btn-primary"
-        >
-          <Plus size={18} />
-          <span>New Topic</span>
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {topics.length > 0 && (
+            <button
+              type="button"
+              onClick={handleEmptyAllTopics}
+              className="btn btn-danger btn-sm"
+              title="Completely delete all topics and subtopics"
+            >
+              <Trash2 size={16} />
+              <span>Clear All Topics</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setTopicModalOpen(true)}
+            className="btn btn-primary"
+          >
+            <Plus size={18} />
+            <span>New Topic</span>
+          </button>
+        </div>
       </div>
 
       {topics.length === 0 ? (
@@ -198,6 +238,15 @@ export const TopicManagerPage: React.FC = () => {
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{sub.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{sub.question_count} questions</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSubtopic(t.id, sub.id, sub.name)}
+                      className="btn-ghost"
+                      style={{ color: 'var(--danger)', padding: '4px' }}
+                      title={`Delete subtopic "${sub.name}"`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
               </div>

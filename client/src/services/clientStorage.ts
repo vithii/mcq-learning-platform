@@ -1,5 +1,6 @@
 import defaultData from '../data/dermatology_mcqs.json';
 import pharmacologyData from '../data/pharmacology_mcqs.json';
+import { broadcastSync, SyncEntityType } from './syncService';
 
 export interface StoredUser {
   id: string;
@@ -175,16 +176,21 @@ export function initClientStorage(forceReseed = false) {
   if (localStorage.getItem('mcq_cleared') === 'true' && !forceReseed) {
     return;
   }
-  const existingQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
-  const existingTopics = getStored<StoredTopic[]>('mcq_topics', []);
-  if (!forceReseed && localStorage.getItem('mcq_v2_initialized') && existingQuestions.length > 0 && existingTopics.length > 0) {
-    // Seamless auto-migration: ensure pharmacology questions are available in existing sessions
-    if (!existingTopics.some(t => t.id === 'prescription-and-dosage-calculations')) {
-      const existingSubtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
-      parseDatasetToStorage(pharmacologyData, existingTopics, existingSubtopics, existingQuestions);
-      setStored('mcq_topics', existingTopics);
-      setStored('mcq_subtopics', existingSubtopics);
-      setStored('mcq_questions', existingQuestions);
+
+  // If already initialized and not force reseeding, do NOT overwrite or reseed user deletions!
+  if (!forceReseed && localStorage.getItem('mcq_v2_initialized')) {
+    // One-time migration for pharmacology dataset for users upgrading from v1
+    if (!localStorage.getItem('mcq_pharm_migrated')) {
+      localStorage.setItem('mcq_pharm_migrated', 'true');
+      const existingQuestions = getStored<StoredQuestion[]>('mcq_questions', []);
+      const existingTopics = getStored<StoredTopic[]>('mcq_topics', []);
+      if (!existingTopics.some(t => t.id === 'prescription-and-dosage-calculations')) {
+        const existingSubtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+        parseDatasetToStorage(pharmacologyData, existingTopics, existingSubtopics, existingQuestions);
+        setStored('mcq_topics', existingTopics, true);
+        setStored('mcq_subtopics', existingSubtopics, true);
+        setStored('mcq_questions', existingQuestions, true);
+      }
     }
     return;
   }
@@ -261,8 +267,21 @@ function getStored<T>(key: string, defaultVal: T): T {
   }
 }
 
-function setStored<T>(key: string, val: T) {
+function setStored<T>(key: string, val: T, skipBroadcast = false) {
   localStorage.setItem(key, JSON.stringify(val));
+  if (!skipBroadcast) {
+    let entity: SyncEntityType | null = null;
+    if (key === 'mcq_questions') entity = 'questions';
+    else if (key === 'mcq_topics' || key === 'mcq_subtopics') entity = 'topics';
+    else if (key === 'mcq_sessions') entity = 'quiz';
+    else if (key === 'mcq_progress' || key === 'mcq_attempts') entity = 'progress';
+    else if (key === 'mcq_bookmarks') entity = 'bookmarks';
+    else if (key === 'mcq_users') entity = 'auth';
+
+    if (entity) {
+      broadcastSync(entity === 'auth' ? 'AUTH_CHANGED' : 'DATA_MUTATED', entity);
+    }
+  }
 }
 
 export class ClientStorageService {
@@ -481,9 +500,73 @@ export class ClientStorageService {
   }
 
   static async deleteTopic(id: string) {
+    // 1. Remove the topic
     let topics = getStored<StoredTopic[]>('mcq_topics', []);
     topics = topics.filter(t => t.id !== id);
     setStored('mcq_topics', topics);
+
+    // 2. Cascade delete all child subtopics belonging to this topic
+    let subtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+    const deletedSubtopicIds = new Set(subtopics.filter(s => s.topic_id === id).map(s => s.id));
+    subtopics = subtopics.filter(s => s.topic_id !== id);
+    setStored('mcq_subtopics', subtopics);
+
+    // 3. Cascade delete all questions belonging to this topic or its subtopics
+    let questions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const deletedQuestionIds = new Set(
+      questions.filter(q => q.topic_id === id || deletedSubtopicIds.has(q.subtopic_id)).map(q => q.id)
+    );
+    questions = questions.filter(q => q.topic_id !== id && !deletedSubtopicIds.has(q.subtopic_id));
+    setStored('mcq_questions', questions);
+
+    // 4. Clean up bookmarks and progress
+    let bookmarks = getStored<string[]>('mcq_bookmarks', []);
+    bookmarks = bookmarks.filter(qId => !deletedQuestionIds.has(qId));
+    setStored('mcq_bookmarks', bookmarks);
+
+    let progress = getStored<StoredProgress[]>('mcq_progress', []);
+    progress = progress.filter(p => !deletedQuestionIds.has(p.question_id));
+    setStored('mcq_progress', progress);
+
+    broadcastSync('DATA_MUTATED', 'topics');
+    broadcastSync('DATA_MUTATED', 'questions');
+
+    return { success: true };
+  }
+
+  static async deleteSubtopic(subtopicId: string) {
+    let subtopics = getStored<StoredSubtopic[]>('mcq_subtopics', []);
+    subtopics = subtopics.filter(s => s.id !== subtopicId);
+    setStored('mcq_subtopics', subtopics);
+
+    // Cascade delete questions in this subtopic
+    let questions = getStored<StoredQuestion[]>('mcq_questions', []);
+    const deletedQuestionIds = new Set(questions.filter(q => q.subtopic_id === subtopicId).map(q => q.id));
+    questions = questions.filter(q => q.subtopic_id !== subtopicId);
+    setStored('mcq_questions', questions);
+
+    let bookmarks = getStored<string[]>('mcq_bookmarks', []);
+    bookmarks = bookmarks.filter(qId => !deletedQuestionIds.has(qId));
+    setStored('mcq_bookmarks', bookmarks);
+
+    let progress = getStored<StoredProgress[]>('mcq_progress', []);
+    progress = progress.filter(p => !deletedQuestionIds.has(p.question_id));
+    setStored('mcq_progress', progress);
+
+    broadcastSync('DATA_MUTATED', 'topics');
+    broadcastSync('DATA_MUTATED', 'questions');
+
+    return { success: true };
+  }
+
+  static async emptyAllTopics() {
+    setStored('mcq_topics', []);
+    setStored('mcq_subtopics', []);
+    setStored('mcq_questions', []);
+    setStored('mcq_bookmarks', []);
+    setStored('mcq_progress', []);
+    broadcastSync('DATA_MUTATED', 'topics');
+    broadcastSync('DATA_MUTATED', 'questions');
     return { success: true };
   }
 
@@ -618,10 +701,10 @@ export class ClientStorageService {
 
   // Reset quiz sessions, answers, and learner progress back to zero
   static async resetQuizProgress() {
-    setStored('mcq_progress', []);
-    setStored('mcq_sessions', []);
-    setStored('mcq_attempts', []);
-    setStored('mcq_bookmarks', []);
+    setStored('mcq_progress', [], true);
+    setStored('mcq_sessions', [], true);
+    setStored('mcq_attempts', [], true);
+    setStored('mcq_bookmarks', [], true);
     const users = getStored<StoredUser[]>('mcq_users', []);
     users.forEach(u => {
       u.xp = 0;
@@ -629,20 +712,22 @@ export class ClientStorageService {
       u.current_streak = 0;
       u.longest_streak = 0;
     });
-    setStored('mcq_users', users);
+    setStored('mcq_users', users, true);
+    broadcastSync('STORAGE_RESET', 'all');
     return { success: true, message: 'All quiz sessions, attempts, and progress have been reset.' };
   }
 
   // Completely empty all questions, topics, subtopics, and quizzes
   static async emptyQuestionBank() {
-    setStored('mcq_questions', []);
-    setStored('mcq_topics', []);
-    setStored('mcq_subtopics', []);
-    setStored('mcq_progress', []);
-    setStored('mcq_sessions', []);
-    setStored('mcq_attempts', []);
-    setStored('mcq_bookmarks', []);
+    setStored('mcq_questions', [], true);
+    setStored('mcq_topics', [], true);
+    setStored('mcq_subtopics', [], true);
+    setStored('mcq_progress', [], true);
+    setStored('mcq_sessions', [], true);
+    setStored('mcq_attempts', [], true);
+    setStored('mcq_bookmarks', [], true);
     localStorage.setItem('mcq_cleared', 'true');
+    broadcastSync('STORAGE_RESET', 'all');
     return { success: true, message: 'Question bank and topics have been completely emptied.' };
   }
 
@@ -651,6 +736,7 @@ export class ClientStorageService {
     localStorage.removeItem('mcq_cleared');
     localStorage.removeItem('mcq_v2_initialized');
     initClientStorage(true);
+    broadcastSync('STORAGE_RESET', 'all');
     return { success: true, message: 'Default question bank restored successfully.' };
   }
 
@@ -1765,6 +1851,71 @@ export class ClientStorageService {
         percentage: totalQuestions > 0 ? Math.round((completedCount / totalQuestions) * 100) : 0,
         liveAccuracy: completedCount > 0 ? Math.round((correctCount / completedCount) * 100) : 0
       }
+    };
+  }
+
+  // CROSS-BROWSER & DEVICE FULL SYNC
+  static exportFullSyncState() {
+    initClientStorage();
+    return {
+      format: 'MCQ_SYNC_PACKAGE',
+      version: '2.0',
+      exportedAt: new Date().toISOString(),
+      platform: 'Adaptive MCQ Learning Platform',
+      data: {
+        users: getStored('mcq_users', []),
+        topics: getStored('mcq_topics', []),
+        subtopics: getStored('mcq_subtopics', []),
+        questions: getStored('mcq_questions', []),
+        achievements: getStored('mcq_achievements', []),
+        progress: getStored('mcq_progress', []),
+        sessions: getStored('mcq_sessions', []),
+        attempts: getStored('mcq_attempts', []),
+        bookmarks: getStored('mcq_bookmarks', []),
+        importHistory: getStored('mcq_import_history', [])
+      }
+    };
+  }
+
+  static importFullSyncState(stateJson: any) {
+    let payload = stateJson;
+    if (typeof stateJson === 'string') {
+      try {
+        payload = JSON.parse(stateJson);
+      } catch (e: any) {
+        throw new Error(`Invalid sync package JSON: ${e.message}`);
+      }
+    }
+
+    if (!payload || !payload.data) {
+      throw new Error('Invalid sync package structure: missing "data" property');
+    }
+
+    const d = payload.data;
+    if (Array.isArray(d.users)) setStored('mcq_users', d.users, true);
+    if (Array.isArray(d.topics)) setStored('mcq_topics', d.topics, true);
+    if (Array.isArray(d.subtopics)) setStored('mcq_subtopics', d.subtopics, true);
+    if (Array.isArray(d.questions)) setStored('mcq_questions', d.questions, true);
+    if (Array.isArray(d.achievements)) setStored('mcq_achievements', d.achievements, true);
+    if (Array.isArray(d.progress)) setStored('mcq_progress', d.progress, true);
+    if (Array.isArray(d.sessions)) setStored('mcq_sessions', d.sessions, true);
+    if (Array.isArray(d.attempts)) setStored('mcq_attempts', d.attempts, true);
+    if (Array.isArray(d.bookmarks)) setStored('mcq_bookmarks', d.bookmarks, true);
+    if (Array.isArray(d.importHistory)) setStored('mcq_import_history', d.importHistory, true);
+
+    localStorage.removeItem('mcq_cleared');
+    localStorage.setItem('mcq_v2_initialized', 'true');
+
+    // Broadcast reset to all other open tabs
+    broadcastSync('STORAGE_RESET', 'all');
+
+    return {
+      success: true,
+      questionsCount: Array.isArray(d.questions) ? d.questions.length : 0,
+      topicsCount: Array.isArray(d.topics) ? d.topics.length : 0,
+      progressCount: Array.isArray(d.progress) ? d.progress.length : 0,
+      bookmarksCount: Array.isArray(d.bookmarks) ? d.bookmarks.length : 0,
+      exportedAt: payload.exportedAt || 'Unknown'
     };
   }
 }

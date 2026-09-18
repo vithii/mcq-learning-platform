@@ -4,6 +4,7 @@ import { ApiClient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { ActivityChart, MasteryBreakdownChart } from '../components/Charts';
+import { useCrossTabSync } from '../services/syncService';
 import {
   Flame,
   Award,
@@ -58,6 +59,10 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  useCrossTabSync(['progress', 'quiz', 'questions', 'topics', 'all'], () => {
+    fetchDashboard();
+  });
 
   if (loading) {
     return (

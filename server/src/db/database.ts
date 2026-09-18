@@ -7,9 +7,20 @@ const isServerless = !!(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_N
 const defaultDbPath = isServerless ? '/tmp/mcq_platform.db' : path.resolve(__dirname, '../../mcq_platform.db');
 const DB_PATH = process.env.DB_PATH || defaultDbPath;
 
-const client: Client = createClient({
-  url: `file:${DB_PATH}`,
-});
+// Support remote Turso / LibSQL Cloud URL for cross-browser shared persistence on Netlify/Serverless
+const remoteUrl = process.env.TURSO_DATABASE_URL || process.env.LIBSQL_URL;
+const remoteAuthToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_AUTH_TOKEN;
+
+const client: Client = createClient(
+  remoteUrl
+    ? {
+        url: remoteUrl,
+        authToken: remoteAuthToken,
+      }
+    : {
+        url: `file:${DB_PATH}`,
+      }
+);
 
 export const db = client;
 
@@ -46,10 +57,16 @@ export async function initDatabase(): Promise<void> {
     }
   }
 
-  // Ensure WAL mode
-  await client.execute('PRAGMA journal_mode = WAL;');
-  await client.execute('PRAGMA foreign_keys = ON;');
-  console.log('Database initialized successfully at:', DB_PATH);
+  // Ensure WAL mode and foreign keys (only on local file databases; remote Turso/libSQL manages WAL)
+  if (!remoteUrl) {
+    try {
+      await client.execute('PRAGMA journal_mode = WAL;');
+      await client.execute('PRAGMA foreign_keys = ON;');
+    } catch {
+      // Ignored for hosted endpoints that manage PRAGMA internally
+    }
+  }
+  console.log('Database initialized successfully at:', remoteUrl ? 'Remote LibSQL Cloud DB' : DB_PATH);
 }
 
 /**

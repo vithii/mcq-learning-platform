@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ApiClient } from '../services/api';
-import { Settings, User, Key, Download, Trash2, ShieldAlert } from 'lucide-react';
+import { SyncModal } from '../components/SyncModal';
+import { Settings, User, Key, Download, Trash2, ShieldAlert, Radio } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { user, updateUserProfile, logout } = useAuth();
@@ -23,6 +24,9 @@ export const SettingsPage: React.FC = () => {
   const [deletePass, setDeletePass] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Sync Hub Modal
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,6 +178,34 @@ export const SettingsPage: React.FC = () => {
         </form>
       </div>
 
+      {/* Cross-Browser & Device Synchronization */}
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Radio size={20} style={{ color: 'var(--success)' }} />
+            <h2 style={{ fontSize: '1.25rem' }}>Cross-Browser & Multi-Device Sync</h2>
+          </div>
+          <span style={{
+            fontSize: '0.75rem',
+            padding: '3px 8px',
+            borderRadius: 'var(--radius-full)',
+            background: 'rgba(34, 197, 94, 0.12)',
+            color: 'var(--success)',
+            fontWeight: 600
+          }}>
+            Real-time Tabs Active
+          </span>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+          Transfer all your questions, progress, bookmarks, and quiz history to another browser (Chrome, Edge, Safari) or device in 1 click using your portable Sync Code.
+        </p>
+
+        <button type="button" onClick={() => setShowSyncModal(true)} className="btn btn-primary">
+          <Radio size={18} />
+          <span>Open Sync Hub & Transfer Data</span>
+        </button>
+      </div>
+
       {/* Data Portability (Section 47) */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
@@ -237,6 +269,8 @@ export const SettingsPage: React.FC = () => {
           </form>
         )}
       </div>
+
+      <SyncModal isOpen={showSyncModal} onClose={() => setShowSyncModal(false)} />
     </div>
   );
 };

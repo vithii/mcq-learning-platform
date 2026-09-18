@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ApiClient } from '../services/api';
+import { subscribeToSync } from '../services/syncService';
 
 export interface User {
   id: string;
@@ -58,6 +59,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     refreshUser();
+
+    // Real-time cross-tab auth synchronization
+    const unsubscribe = subscribeToSync((msg) => {
+      if (msg.type === 'AUTH_CHANGED' || msg.type === 'STORAGE_RESET') {
+        const currentToken = ApiClient.getToken();
+        setToken(currentToken);
+        refreshUser();
+      }
+    });
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'mcq_auth_token') {
+        setToken(e.newValue);
+        refreshUser();
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {

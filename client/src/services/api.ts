@@ -1,4 +1,5 @@
 import { ClientStorageService } from './clientStorage';
+import { broadcastSync } from './syncService';
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? (import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`)
@@ -10,13 +11,57 @@ export interface ApiResponse<T = any> {
   details?: any;
 }
 
+export type StoragePreference = 'auto' | 'server' | 'client';
+
 export class ApiClient {
-  private static isClientMode(): boolean {
-    return localStorage.getItem('mcq_mode') === 'client' || (!import.meta.env.VITE_API_URL && localStorage.getItem('mcq_force_client') === 'true');
+  private static lastHealthCheck = 0;
+  private static serverHealthy = false;
+  private static serverCooldownUntil = 0;
+
+  public static getStoragePreference(): StoragePreference {
+    return (localStorage.getItem('mcq_storage_pref') as StoragePreference) || 'auto';
   }
 
-  private static enableClientMode() {
-    localStorage.setItem('mcq_mode', 'client');
+  public static setStoragePreference(pref: StoragePreference) {
+    localStorage.setItem('mcq_storage_pref', pref);
+    this.lastHealthCheck = 0;
+    broadcastSync('DATA_MUTATED', 'all');
+  }
+
+  public static async checkServerHealth(force = false): Promise<boolean> {
+    const now = Date.now();
+    if (!force && now - this.lastHealthCheck < 15000) {
+      return this.serverHealthy;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${API_BASE}/health`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      });
+      clearTimeout(timeoutId);
+      this.serverHealthy = res.ok;
+      this.lastHealthCheck = now;
+      if (this.serverHealthy) {
+        this.serverCooldownUntil = 0;
+      }
+      return this.serverHealthy;
+    } catch {
+      this.serverHealthy = false;
+      this.lastHealthCheck = now;
+      return false;
+    }
+  }
+
+  public static isClientMode(): boolean {
+    const pref = this.getStoragePreference();
+    if (pref === 'client') return true;
+    if (pref === 'server') return false;
+    // Auto mode: check temporary server cooldown
+    if (Date.now() < this.serverCooldownUntil) return true;
+    return false;
   }
 
   public static getToken(): string | null {
@@ -29,6 +74,7 @@ export class ApiClient {
     } else {
       localStorage.removeItem('mcq_auth_token');
     }
+    broadcastSync('AUTH_CHANGED', 'auth', { token });
   }
 
   private static async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -70,10 +116,15 @@ export class ApiClient {
       return await clientFn();
     }
     try {
-      return await apiFn();
+      const result = await apiFn();
+      this.serverHealthy = true;
+      this.serverCooldownUntil = 0;
+      return result;
     } catch (err: any) {
-      console.warn(`[ApiClient] Server unreachable (${err.message}). Seamlessly switching to browser client storage mode.`);
-      this.enableClientMode();
+      console.warn(`[ApiClient] Server unreachable (${err.message}). Using local client storage fallback.`);
+      // Temporary cooldown so immediate subsequent calls don't freeze the UI
+      this.serverCooldownUntil = Date.now() + 20000;
+      this.serverHealthy = false;
       return await clientFn();
     }
   }
@@ -217,6 +268,22 @@ export class ApiClient {
         body: JSON.stringify(data)
       }),
       () => ClientStorageService.createSubtopic(topicId, data)
+    );
+  }
+
+  static async deleteSubtopic(topicId: string, subtopicId: string) {
+    return this.executeWithFallback(
+      () => this.request(`/topics/${topicId}/subtopics/${subtopicId}`, {
+        method: 'DELETE'
+      }),
+      () => ClientStorageService.deleteSubtopic(subtopicId)
+    );
+  }
+
+  static async emptyAllTopics() {
+    return this.executeWithFallback(
+      () => this.request('/admin/empty-bank', { method: 'POST' }),
+      () => ClientStorageService.emptyAllTopics()
     );
   }
 
@@ -505,5 +572,14 @@ export class ApiClient {
       () => this.request('/admin/restore-defaults', { method: 'POST' }),
       () => ClientStorageService.restoreDefaultQuestionBank()
     );
+  }
+
+  // Cross-Browser Full Synchronization Snapshot
+  static exportFullSyncState() {
+    return ClientStorageService.exportFullSyncState();
+  }
+
+  static importFullSyncState(stateJson: any) {
+    return ClientStorageService.importFullSyncState(stateJson);
   }
 }

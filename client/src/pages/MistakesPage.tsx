@@ -4,6 +4,7 @@ import { ApiClient } from '../services/api';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { EmptyState } from '../components/EmptyState';
 import { RotateCcw, Play, CheckCircle2, AlertCircle, Clock, Award } from 'lucide-react';
+import { useCrossTabSync } from '../services/syncService';
 
 export const MistakesPage: React.FC = () => {
   const [mistakes, setMistakes] = useState<any[]>([]);
@@ -24,6 +25,10 @@ export const MistakesPage: React.FC = () => {
   useEffect(() => {
     fetchMistakes();
   }, []);
+
+  useCrossTabSync(['progress', 'quiz', 'all'], () => {
+    fetchMistakes();
+  });
 
   if (loading) {
     return (

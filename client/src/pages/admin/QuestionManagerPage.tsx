@@ -3,6 +3,7 @@ import { ApiClient } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { QuestionEditorModal } from '../../components/QuestionEditorModal';
+import { useCrossTabSync } from '../../services/syncService';
 import {
   HelpCircle,
   Plus,
@@ -85,6 +86,11 @@ export const QuestionManagerPage: React.FC = () => {
   useEffect(() => {
     fetchQuestions(page);
   }, [fetchQuestions, page]);
+
+  useCrossTabSync(['questions', 'topics', 'all'], () => {
+    loadTopics();
+    fetchQuestions(page);
+  });
 
   // Single Question Delete
   const handleDeleteQuestion = async (id: string) => {
