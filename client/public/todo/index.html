@@ -81,8 +81,8 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 .ring.full .bar { stroke: var(--l-errands); }
 
 /* Tabs */
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); }
-.tab { border: 0; background: none; padding: 10px 6px; border-radius: 12px; font-weight: 700; font-size: 15px; color: var(--muted); display: flex; justify-content: center; align-items: center; gap: 6px; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 4px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); }
+.tab { border: 0; background: none; padding: 9px 2px; border-radius: 12px; font-weight: 700; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 5px; }
 .tab .count { font-size: 12px; min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--bg); font-variant-numeric: tabular-nums; }
 .tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
 .tab[aria-selected="true"] .count { background: var(--sun); color: #16213D; }
@@ -126,6 +126,12 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 .clear { align-self: center; border: 1.5px dashed var(--line); background: none; border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; color: var(--muted); }
 .clear.armed { border-style: solid; border-color: var(--danger); color: var(--danger); }
 .sync { font-size: 12px; color: var(--muted); text-align: center; }
+.plan { display: flex; align-items: center; gap: 12px; background: var(--sun); color: #16213D; border-radius: 18px; padding: 12px 8px 12px 16px; animation: pop-in .3s ease-out; }
+.plan-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.plan-text strong { font-family: var(--font-display); font-weight: 800; font-size: 17px; }
+.plan-text span { font-size: 14px; }
+.plan-go { flex: none; border: 0; background: #16213D; color: #FFCE3A; border-radius: 12px; padding: 10px 14px; font-weight: 800; font-size: 14px; }
+.plan-x { flex: none; border: 0; background: none; color: #16213D; width: 32px; height: 32px; border-radius: 10px; font-size: 20px; line-height: 1; }
 
 /* FAB + sheet */
 .fab { position: fixed; z-index: 20; right: max(20px, calc(env(safe-area-inset-right, 0px) + 16px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); width: 64px; height: 64px; border-radius: 22px; border: 0; background: var(--accent); color: var(--accent-ink); box-shadow: 0 10px 24px rgba(47,91,255,.4); display: grid; place-items: center; transition: transform .15s; }
@@ -175,8 +181,15 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   <nav class="tabs" role="tablist" aria-label="Views">
     <button class="tab" role="tab" data-view="todo" id="tab-todo">To do <span class="count" id="c-todo">0</span></button>
     <button class="tab" role="tab" data-view="today" id="tab-today">Today <span class="count" id="c-today">0</span></button>
+    <button class="tab" role="tab" data-view="month" id="tab-month">Month <span class="count" id="c-month">0</span></button>
     <button class="tab" role="tab" data-view="done" id="tab-done">Done <span class="count" id="c-done">0</span></button>
   </nav>
+
+  <div class="plan" id="plan" hidden>
+    <div class="plan-text"><strong id="planTitle"></strong><span id="planBody"></span></div>
+    <button class="plan-go" id="planGo">Add tasks</button>
+    <button class="plan-x" id="planX" aria-label="Hide for today">×</button>
+  </div>
 
   <div class="filters" id="filters" aria-label="Filter by list"></div>
 
@@ -202,6 +215,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
         <button type="button" class="chip" data-when="today">Today</button>
         <button type="button" class="chip" data-when="tomorrow">Tomorrow</button>
         <button type="button" class="chip" data-when="weekend">Weekend</button>
+        <button type="button" class="chip" data-when="month">This month</button>
         <span class="chip date-chip" id="pickDateChip"><span id="pickDateLabel">Pick a date</span><input id="pickDate" type="date" aria-label="Pick a date"></span>
       </div>
       <button class="add-btn" id="addBtn" type="submit" disabled>Add task</button>
@@ -298,6 +312,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     if (due === t) return { text: "Today", cls: "today" };
     if (due === ymd(addDays(new Date(), 1))) return { text: "Tomorrow", cls: "" };
     const d = parseYmd(due), diff = (d - parseYmd(t)) / 864e5;
+    if (due === endOfMonth() && diff >= 7) return { text: "This month", cls: "" };
     return { text: diff < 7 ? d.toLocaleDateString(undefined, { weekday: "long" }) : d.toLocaleDateString(undefined, { month: "short", day: "numeric" }), cls: "" };
   }
   function whenToDate(when) {
@@ -305,10 +320,35 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     if (when === "today") return ymd(now);
     if (when === "tomorrow") return ymd(addDays(now, 1));
     if (when === "weekend") { const day = now.getDay(); return ymd(addDays(now, day === 6 || day === 0 ? 0 : 6 - day)); }
+    if (when === "month") return endOfMonth();
     if (when === "date") return draft.date;
     return null;
   }
+  function endOfMonth() { const n = new Date(); return ymd(new Date(n.getFullYear(), n.getMonth() + 1, 0)); }
   const isToday = t => t.due && t.due <= todayStr();
+  const isThisMonth = t => t.due && t.due <= endOfMonth();
+
+  // ---------- planning nudges ----------
+  let planKind = null;
+  function planDismissed(kind) { try { return localStorage.getItem("tickle-plan-" + kind) === todayStr(); } catch (e) { return false; } }
+  function renderPlan() {
+    const open = tasks.filter(x => !x.done);
+    const todayCount = open.filter(isToday).length + tasks.filter(doneToday).length;
+    const monthCount = open.filter(x => isThisMonth(x) && !isToday(x)).length;
+    const dom = new Date().getDate();
+    planKind = null;
+    if (!todayCount && !planDismissed("today")) planKind = "today";
+    else if ((dom <= 3 || !monthCount) && !planDismissed("month")) planKind = "month";
+    $("plan").hidden = !planKind;
+    if (planKind === "today") {
+      $("planTitle").textContent = "Plan your day";
+      $("planBody").textContent = "Nothing is on today's list yet. What do you want to get done?";
+    } else if (planKind === "month") {
+      const m = new Date().toLocaleDateString(undefined, { month: "long" });
+      $("planTitle").textContent = `Plan ${m}`;
+      $("planBody").textContent = monthCount ? `${monthCount} task${monthCount === 1 ? "" : "s"} planned so far. Add the big things for this month.` : "Add the big things you want to finish this month.";
+    }
+  }
   const doneToday = t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === todayStr();
 
   // ---------- render ----------
@@ -336,6 +376,8 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 
     $("c-todo").textContent = open.length;
     $("c-today").textContent = todayOpen.length;
+    $("c-month").textContent = open.filter(isThisMonth).length;
+    renderPlan();
     $("c-done").textContent = tasks.length - open.length;
     document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.view === view)));
 
@@ -354,6 +396,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     // tasks
     let shown = tasks.filter(x => (view === "done" ? x.done : !x.done || leaving.has(x.id)));
     if (view === "today") shown = shown.filter(x => isToday(x) || leaving.has(x.id));
+    if (view === "month") shown = shown.filter(x => isThisMonth(x) || leaving.has(x.id));
     if (filter !== "all") shown = shown.filter(x => x.list === filter);
     if (view === "done") shown.sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
     else shown.sort((a, b) => (a.due || "9999") .localeCompare(b.due || "9999") || a.createdAt - b.createdAt);
@@ -404,6 +447,8 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       ? ["Nothing ticked off yet", "Tap the circle next to a task when you finish it."]
       : view === "today" && openCount
       ? ["Today is wide open", "Give a task a date of today and it shows up here."]
+      : view === "month"
+      ? ["Nothing planned this month", "Tap + and choose This month to add your monthly goals."]
       : ["All clear!", "Tap the + button to add a task, or start with one of these:"];
     li.innerHTML = `<div class="blob"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2></h2><p></p>`;
     li.querySelector("h2").textContent = msg[0];
@@ -495,15 +540,17 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     $("pickDateChip").setAttribute("aria-pressed", String(draft.when === "date"));
     $("pickDateLabel").textContent = draft.when === "date" && draft.date ? parseYmd(draft.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Pick a date";
   }
-  function openSheet() {
+  function openSheet(when) {
     if (filter !== "all") draft.list = filter;
-    draft.when = view === "today" ? "today" : draft.when;
+    draft.when = typeof when === "string" ? when : view === "today" ? "today" : view === "month" ? "month" : draft.when;
     renderPickers();
     $("sheetWrap").hidden = false;
     setTimeout(() => $("newTitle").focus(), 60);
   }
   function closeSheet() { $("sheetWrap").hidden = true; }
-  $("fab").addEventListener("click", openSheet);
+  $("fab").addEventListener("click", () => openSheet());
+  $("planGo").addEventListener("click", () => openSheet(planKind === "month" ? "month" : "today"));
+  $("planX").addEventListener("click", () => { try { localStorage.setItem("tickle-plan-" + planKind, todayStr()); } catch (e) {} $("plan").hidden = true; });
   $("scrim").addEventListener("click", closeSheet);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
   $("pickList").addEventListener("click", e => { const b = e.target.closest("[data-list]"); if (b) { draft.list = b.dataset.list; renderPickers(); } });
@@ -561,6 +608,10 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 
   // ---------- boot ----------
   loadLocal();
+  // Links from reminders: #today, #month, #plan-today, #plan-month
+  const hash = location.hash.slice(1);
+  if (["todo", "today", "month", "done"].includes(hash)) view = hash;
+  if (hash === "plan-today" || hash === "plan-month") { view = hash.slice(5); setTimeout(() => openSheet(view), 300); }
   render();
   connectDb();
   // Roll over to a new day while the app stays open.
