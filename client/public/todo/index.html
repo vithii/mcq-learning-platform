@@ -112,6 +112,14 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 .meta .lst::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
 .meta .due.today { color: var(--accent); font-weight: 700; }
 .meta .due.late { color: var(--danger); font-weight: 700; }
+.meta .repeat { display: inline-flex; align-items: center; gap: 4px; }
+.meta .repeat::before { content: "↻"; font-weight: 700; color: var(--c); }
+.meta .streak { font-weight: 700; background: var(--sun); color: #16213D; border-radius: 999px; padding: 0 8px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg button { border: 2px solid var(--line); background: var(--bg); border-radius: 14px; padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.seg strong { font-size: 15px; }
+.seg span { font-size: 12px; color: var(--muted); }
+.seg button[aria-pressed="true"] { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .del { flex: none; border: 0; background: none; width: 40px; height: 40px; border-radius: 12px; color: var(--muted); display: grid; place-items: center; }
 .del svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
 .del.armed { background: var(--danger); color: #fff; width: auto; padding: 0 10px; font-size: 13px; font-weight: 700; }
@@ -207,9 +215,13 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       <div class="grab"></div>
       <h3>New task</h3>
       <input id="newTitle" type="text" placeholder="What needs doing?" autocomplete="off" maxlength="140" enterkeyhint="done">
+      <div class="seg" id="pickType" role="group" aria-label="Task type">
+        <button type="button" data-type="once"><strong>One-time</strong><span>Tick it once and it's done</span></button>
+        <button type="button" data-type="daily"><strong>Every day</strong><span>Comes back each morning</span></button>
+      </div>
       <span class="field-label">List</span>
       <div class="row" id="pickList"></div>
-      <span class="field-label">When</span>
+      <span class="field-label" id="whenLabel">When</span>
       <div class="row" id="pickWhen">
         <button type="button" class="chip" data-when="none">No date</button>
         <button type="button" class="chip" data-when="today">Today</button>
@@ -236,7 +248,10 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   ];
   const listById = Object.fromEntries(LISTS.map(l => [l.id, l]));
   const CHEERS = ["Nice one!", "Boom. Done.", "Look at you go!", "Crushed it.", "One less thing!", "Smooth.", "On a roll!", "Tick!"];
-  const IDEAS = ["Drink a glass of water", "Reply to that email", "Take a 10-minute walk", "Plan tomorrow"];
+  const IDEAS = [
+    { t: "Brush teeth", r: "daily" }, { t: "Take a shower", r: "daily" }, { t: "Drink 8 glasses of water", r: "daily" },
+    { t: "Reply to that email", r: "once" }, { t: "Plan this week", r: "once" },
+  ];
   const LS_KEY = "tickle-tasks-v1";
 
   const $ = id => document.getElementById(id);
@@ -249,7 +264,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   let tasks = [];
   let view = "todo";
   let filter = "all";
-  let draft = { list: "personal", when: "today", date: null };
+  let draft = { repeat: "once", list: "personal", when: "today", date: null };
   let store = null; // db collection ref when shared storage is available
   let armedDelete = null, armedClear = false;
   const leaving = new Set();
@@ -325,16 +340,27 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     return null;
   }
   function endOfMonth() { const n = new Date(); return ymd(new Date(n.getFullYear(), n.getMonth() + 1, 0)); }
-  const isToday = t => t.due && t.due <= todayStr();
-  const isThisMonth = t => t.due && t.due <= endOfMonth();
+  const isDaily = t => t.repeat === "daily";
+  const doneNow = t => isDaily(t) ? (t.days || []).includes(todayStr()) : !!t.done;
+  function streakOf(t) {
+    const days = new Set(t.days || []);
+    let d = new Date(), n = 0;
+    if (!days.has(ymd(d))) d = addDays(d, -1);
+    while (days.has(ymd(d))) { n++; d = addDays(d, -1); }
+    return n;
+  }
+  const isToday = t => isDaily(t) || (t.due && t.due <= todayStr());
+  const isThisMonth = t => !isDaily(t) && t.due && t.due <= endOfMonth();
 
   // ---------- planning nudges ----------
   let planKind = null;
   function planDismissed(kind) { try { return localStorage.getItem("tickle-plan-" + kind) === todayStr(); } catch (e) { return false; } }
   function renderPlan() {
-    const open = tasks.filter(x => !x.done);
-    const todayCount = open.filter(isToday).length + tasks.filter(doneToday).length;
+    const once = tasks.filter(x => !isDaily(x));
+    const open = once.filter(x => !x.done);
+    const todayCount = open.filter(isToday).length + once.filter(doneToday).length;
     const monthCount = open.filter(x => isThisMonth(x) && !isToday(x)).length;
+    const hasDaily = tasks.some(isDaily);
     const dom = new Date().getDate();
     planKind = null;
     if (!todayCount && !planDismissed("today")) planKind = "today";
@@ -342,14 +368,14 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     $("plan").hidden = !planKind;
     if (planKind === "today") {
       $("planTitle").textContent = "Plan your day";
-      $("planBody").textContent = "Nothing is on today's list yet. What do you want to get done?";
+      $("planBody").textContent = hasDaily ? "Your daily tasks are set. What one-time tasks do you want to finish today?" : "Nothing is on today's list yet. What do you want to get done?";
     } else if (planKind === "month") {
       const m = new Date().toLocaleDateString(undefined, { month: "long" });
       $("planTitle").textContent = `Plan ${m}`;
       $("planBody").textContent = monthCount ? `${monthCount} task${monthCount === 1 ? "" : "s"} planned so far. Add the big things for this month.` : "Add the big things you want to finish this month.";
     }
   }
-  const doneToday = t => t.done && t.doneAt && ymd(new Date(t.doneAt)) === todayStr();
+  const doneToday = t => isDaily(t) ? doneNow(t) : t.done && t.doneAt && ymd(new Date(t.doneAt)) === todayStr();
 
   // ---------- render ----------
   function render() {
@@ -359,7 +385,10 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     const h = now.getHours();
     $("greet").textContent = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 
-    const open = tasks.filter(x => !x.done);
+    const open = tasks.filter(x => !doneNow(x));
+    const onceAll = tasks.filter(x => !isDaily(x));
+    const onceOpen = onceAll.filter(x => !x.done);
+    const doneCount = onceAll.length - onceOpen.length;
     const todayOpen = open.filter(isToday);
     const finishedToday = tasks.filter(doneToday);
     const total = todayOpen.length + finishedToday.length;
@@ -376,9 +405,9 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 
     $("c-todo").textContent = open.length;
     $("c-today").textContent = todayOpen.length;
-    $("c-month").textContent = open.filter(isThisMonth).length;
+    $("c-month").textContent = onceOpen.filter(isThisMonth).length;
     renderPlan();
-    $("c-done").textContent = tasks.length - open.length;
+    $("c-done").textContent = doneCount;
     document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.view === view)));
 
     // filters
@@ -394,12 +423,15 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     });
 
     // tasks
-    let shown = tasks.filter(x => (view === "done" ? x.done : !x.done || leaving.has(x.id)));
-    if (view === "today") shown = shown.filter(x => isToday(x) || leaving.has(x.id));
-    if (view === "month") shown = shown.filter(x => isThisMonth(x) || leaving.has(x.id));
+    // Daily tasks stay on the list all day (ticked or not); one-time tasks leave once ticked.
+    const liveOnce = x => !x.done || leaving.has(x.id);
+    let shown;
+    if (view === "done") shown = onceAll.filter(x => x.done);
+    else if (view === "month") shown = onceAll.filter(x => liveOnce(x) && isThisMonth(x));
+    else shown = tasks.filter(x => isDaily(x) || (liveOnce(x) && (view === "todo" || isToday(x))));
     if (filter !== "all") shown = shown.filter(x => x.list === filter);
     if (view === "done") shown.sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
-    else shown.sort((a, b) => (a.due || "9999") .localeCompare(b.due || "9999") || a.createdAt - b.createdAt);
+    else shown.sort((a, b) => (isDaily(b) - isDaily(a)) || (a.due || "9999").localeCompare(b.due || "9999") || a.createdAt - b.createdAt);
 
     const ul = $("list");
     ul.innerHTML = "";
@@ -407,8 +439,8 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     else {
       let lastGroup = null;
       shown.forEach(x => {
-        if (view === "todo") {
-          const g = !x.due ? "Someday" : x.due < t ? "Overdue" : x.due === t ? "Today" : "Coming up";
+        if (view === "todo" || view === "today") {
+          const g = isDaily(x) ? "Every day" : view === "today" ? "Just today" : !x.due ? "Someday" : x.due < t ? "Overdue" : x.due === t ? "Today" : "Coming up";
           if (g !== lastGroup) { const li = document.createElement("li"); li.className = "group-label"; li.textContent = g; ul.appendChild(li); lastGroup = g; }
         }
         ul.appendChild(taskEl(x));
@@ -416,7 +448,6 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     }
 
     const clear = document.createElement("button");
-    const doneCount = tasks.length - open.length;
     if (view === "done" && doneCount) {
       clear.className = "clear" + (armedClear ? " armed" : "");
       clear.id = "clearDone";
@@ -428,13 +459,21 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   function taskEl(x) {
     const l = listById[x.list] || LISTS[0];
     const li = document.createElement("li");
-    li.className = "task" + (x.done ? " done" : "") + (leaving.has(x.id) && view !== "done" ? " leaving" : "");
+    const done = doneNow(x);
+    li.className = "task" + (done ? " done" : "") + (leaving.has(x.id) && view !== "done" ? " leaving" : "");
     li.dataset.id = x.id;
     li.style.setProperty("--c", l.c);
-    const due = dueInfo(x.due);
+    let extra = "";
+    if (isDaily(x)) {
+      const s = streakOf(x);
+      extra = `<span class="repeat">Every day</span>${s > 1 ? `<span class="streak">${s}-day streak</span>` : ""}`;
+    } else {
+      const due = dueInfo(x.due);
+      if (due) extra = `<span class="due ${done ? "" : due.cls}">${due.text}</span>`;
+    }
     li.innerHTML = `
-      <button class="check" data-act="toggle" aria-label="${x.done ? "Mark not done" : "Mark done"}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-      <div class="body"><span class="title"></span><span class="meta"><span class="lst">${l.name}</span>${due ? `<span class="due ${x.done ? "" : due.cls}">${due.text}</span>` : ""}</span></div>
+      <button class="check" data-act="toggle" aria-label="${done ? "Mark not done" : "Mark done"}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <div class="body"><span class="title"></span><span class="meta"><span class="lst">${l.name}</span>${extra}</span></div>
       <button class="del${armedDelete === x.id ? " armed" : ""}" data-act="del" aria-label="Delete task">${armedDelete === x.id ? "Delete" : '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'}</button>`;
     li.querySelector(".title").textContent = x.title;
     return li;
@@ -455,32 +494,49 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     li.querySelector("p").textContent = msg[1];
     if (view === "todo" || (view === "today" && !openCount)) {
       const ideas = document.createElement("div"); ideas.className = "ideas";
-      IDEAS.forEach(i => { const b = document.createElement("button"); b.className = "chip"; b.dataset.idea = i; b.textContent = "+ " + i; ideas.appendChild(b); });
+      IDEAS.filter(i => !tasks.some(x => x.title === i.t)).forEach(i => { const b = document.createElement("button"); b.className = "chip"; b.dataset.idea = i.t; b.dataset.repeat = i.r; b.textContent = (i.r === "daily" ? "↻ " : "+ ") + i.t; ideas.appendChild(b); });
       li.appendChild(ideas);
     }
     return li;
   }
 
   // ---------- actions ----------
-  function addTask(title, list, due) {
-    const task = { id: uid(), title: title.trim().slice(0, 140), list, due: due || null, done: false, doneAt: null, createdAt: Date.now() };
+  function addTask(title, list, due, repeat) {
+    const task = repeat === "daily"
+      ? { id: uid(), title: title.trim().slice(0, 140), list, repeat: "daily", days: [], createdAt: Date.now() }
+      : { id: uid(), title: title.trim().slice(0, 140), list, repeat: "once", due: due || null, done: false, doneAt: null, createdAt: Date.now() };
     tasks.push(task);
     render();
     persist(task);
   }
+  function celebrate(originEl) {
+    const r = originEl.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2);
+    const finished = tasks.filter(doneToday).length, left = tasks.filter(x => !doneNow(x) && isToday(x)).length;
+    if (left === 0 && finished > 1) setTimeout(() => bigBurst(), 300);
+  }
   function toggle(id, originEl) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
+    if (isDaily(t)) {
+      const d = todayStr(), was = t.days || [];
+      t.days = was.includes(d) ? was.filter(x => x !== d) : [...was, d].sort().slice(-400);
+      if (t.days.includes(d)) {
+        const s = streakOf(t);
+        showToast(s > 1 ? `${s} days in a row!` : CHEERS[Math.floor(Math.random() * CHEERS.length)], () => { t.days = was; render(); persist(t); });
+        celebrate(originEl);
+      }
+      render();
+      persist(t);
+      return;
+    }
     t.done = !t.done;
     t.doneAt = t.done ? Date.now() : null;
     if (t.done) {
-      const r = originEl.getBoundingClientRect();
-      burst(r.left + r.width / 2, r.top + r.height / 2);
       leaving.add(id);
       showToast(CHEERS[Math.floor(Math.random() * CHEERS.length)], () => { t.done = false; t.doneAt = null; leaving.delete(id); render(); persist(t); });
       setTimeout(() => { leaving.delete(id); render(); }, 650);
-      const finished = tasks.filter(doneToday).length, left = tasks.filter(x => !x.done && isToday(x)).length;
-      if (left === 0 && finished > 1) setTimeout(() => bigBurst(), 300);
+      celebrate(originEl);
     }
     render();
     persist(t);
@@ -507,11 +563,11 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   });
   $("list").addEventListener("click", e => {
     const idea = e.target.closest("[data-idea]");
-    if (idea) { addTask(idea.dataset.idea, "personal", todayStr()); return; }
+    if (idea) { addTask(idea.dataset.idea, "personal", todayStr(), idea.dataset.repeat); return; }
     if (e.target.closest("#clearDone")) {
       if (!armedClear) { armedClear = true; render(); return; }
-      const gone = tasks.filter(x => x.done);
-      tasks = tasks.filter(x => !x.done); armedClear = false; render();
+      const gone = tasks.filter(x => !isDaily(x) && x.done);
+      tasks = tasks.filter(x => !gone.includes(x)); armedClear = false; render();
       gone.forEach(t => persist(t, true));
       showToast(`Cleared ${gone.length} task${gone.length === 1 ? "" : "s"}`);
       return;
@@ -536,6 +592,9 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       b.innerHTML = '<span class="dot"></span>' + l.name;
       pl.appendChild(b);
     });
+    $("pickType").querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", String(draft.repeat === b.dataset.type)));
+    $("pickWhen").hidden = $("whenLabel").hidden = draft.repeat === "daily";
+    $("newTitle").placeholder = draft.repeat === "daily" ? "e.g. Brush teeth" : "e.g. Create my Fiverr gig";
     $("pickWhen").querySelectorAll("[data-when]").forEach(b => b.setAttribute("aria-pressed", String(draft.when === b.dataset.when)));
     $("pickDateChip").setAttribute("aria-pressed", String(draft.when === "date"));
     $("pickDateLabel").textContent = draft.when === "date" && draft.date ? parseYmd(draft.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Pick a date";
@@ -543,6 +602,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   function openSheet(when) {
     if (filter !== "all") draft.list = filter;
     draft.when = typeof when === "string" ? when : view === "today" ? "today" : view === "month" ? "month" : draft.when;
+    if (typeof when === "string" || view === "month") draft.repeat = "once";
     renderPickers();
     $("sheetWrap").hidden = false;
     setTimeout(() => $("newTitle").focus(), 60);
@@ -553,6 +613,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   $("planX").addEventListener("click", () => { try { localStorage.setItem("tickle-plan-" + planKind, todayStr()); } catch (e) {} $("plan").hidden = true; });
   $("scrim").addEventListener("click", closeSheet);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+  $("pickType").addEventListener("click", e => { const b = e.target.closest("[data-type]"); if (b) { draft.repeat = b.dataset.type; renderPickers(); } });
   $("pickList").addEventListener("click", e => { const b = e.target.closest("[data-list]"); if (b) { draft.list = b.dataset.list; renderPickers(); } });
   $("pickWhen").addEventListener("click", e => { const b = e.target.closest("[data-when]"); if (b) { draft.when = b.dataset.when; renderPickers(); } });
   $("pickDate").addEventListener("change", e => { if (e.target.value) { draft.when = "date"; draft.date = e.target.value; renderPickers(); } });
@@ -560,7 +621,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   $("sheet").addEventListener("submit", e => {
     e.preventDefault();
     const v = $("newTitle").value.trim(); if (!v) return;
-    addTask(v, draft.list, whenToDate(draft.when));
+    addTask(v, draft.list, whenToDate(draft.when), draft.repeat);
     $("newTitle").value = ""; $("addBtn").disabled = true;
     closeSheet();
     showToast("Added!");
