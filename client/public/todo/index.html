@@ -154,6 +154,15 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
 #newTitle:focus { border-color: var(--accent); outline: none; }
 .field-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.day { border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 7px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; }
+.day .dname { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.day .dnum { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.day .dmon { font-size: 10px; font-weight: 600; color: var(--muted); }
+.day.is-today { border-color: var(--accent); }
+.day.is-today .dmon { color: var(--accent); font-weight: 800; }
+.day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.day[aria-pressed="true"] .dname, .day[aria-pressed="true"] .dmon { color: var(--accent-ink); }
 .date-chip { position: relative; }
 .date-chip input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
 .add-btn { border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 17px; padding: 15px; }
@@ -222,11 +231,9 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       <span class="field-label">List</span>
       <div class="row" id="pickList"></div>
       <span class="field-label" id="whenLabel">When</span>
+      <div class="week" id="pickWeek" role="group" aria-label="Pick a day this week"></div>
       <div class="row" id="pickWhen">
         <button type="button" class="chip" data-when="none">No date</button>
-        <button type="button" class="chip" data-when="today">Today</button>
-        <button type="button" class="chip" data-when="tomorrow">Tomorrow</button>
-        <button type="button" class="chip" data-when="weekend">Weekend</button>
         <button type="button" class="chip" data-when="month">This month</button>
         <span class="chip date-chip" id="pickDateChip"><span id="pickDateLabel">Pick a date</span><input id="pickDate" type="date" aria-label="Pick a date"></span>
       </div>
@@ -593,11 +600,26 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       pl.appendChild(b);
     });
     $("pickType").querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", String(draft.repeat === b.dataset.type)));
-    $("pickWhen").hidden = $("whenLabel").hidden = draft.repeat === "daily";
+    $("pickWhen").hidden = $("whenLabel").hidden = $("pickWeek").hidden = draft.repeat === "daily";
+    // Normalise quick picks (today/tomorrow/weekend) to a concrete date so the week grid can highlight it.
+    if (["today", "tomorrow", "weekend"].includes(draft.when)) { draft.date = whenToDate(draft.when); draft.when = "date"; }
+    const wk = $("pickWeek"); wk.innerHTML = "";
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(new Date(), i), s = ymd(d);
+      weekDates.push(s);
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "day" + (i === 0 ? " is-today" : ""); b.dataset.date = s;
+      b.setAttribute("aria-pressed", String(draft.when === "date" && draft.date === s));
+      b.setAttribute("aria-label", d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }));
+      b.innerHTML = `<span class="dname">${d.toLocaleDateString(undefined, { weekday: "short" })}</span><span class="dnum">${d.getDate()}</span><span class="dmon">${i === 0 ? "Today" : d.toLocaleDateString(undefined, { month: "short" })}</span>`;
+      wk.appendChild(b);
+    }
+    const laterDate = draft.when === "date" && draft.date && !weekDates.includes(draft.date);
     $("newTitle").placeholder = draft.repeat === "daily" ? "e.g. Brush teeth" : "e.g. Create my Fiverr gig";
     $("pickWhen").querySelectorAll("[data-when]").forEach(b => b.setAttribute("aria-pressed", String(draft.when === b.dataset.when)));
-    $("pickDateChip").setAttribute("aria-pressed", String(draft.when === "date"));
-    $("pickDateLabel").textContent = draft.when === "date" && draft.date ? parseYmd(draft.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Pick a date";
+    $("pickDateChip").setAttribute("aria-pressed", String(laterDate));
+    $("pickDateLabel").textContent = laterDate ? parseYmd(draft.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) : "Later date";
   }
   function openSheet(when) {
     if (filter !== "all") draft.list = filter;
@@ -616,6 +638,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
   $("pickType").addEventListener("click", e => { const b = e.target.closest("[data-type]"); if (b) { draft.repeat = b.dataset.type; renderPickers(); } });
   $("pickList").addEventListener("click", e => { const b = e.target.closest("[data-list]"); if (b) { draft.list = b.dataset.list; renderPickers(); } });
   $("pickWhen").addEventListener("click", e => { const b = e.target.closest("[data-when]"); if (b) { draft.when = b.dataset.when; renderPickers(); } });
+  $("pickWeek").addEventListener("click", e => { const b = e.target.closest("[data-date]"); if (b) { draft.when = "date"; draft.date = b.dataset.date; renderPickers(); } });
   $("pickDate").addEventListener("change", e => { if (e.target.value) { draft.when = "date"; draft.date = e.target.value; renderPickers(); } });
   $("newTitle").addEventListener("input", e => { $("addBtn").disabled = !e.target.value.trim(); });
   $("sheet").addEventListener("submit", e => {
